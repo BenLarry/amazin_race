@@ -34,3 +34,44 @@ def add_player(name, starting_points=1000):
     conn.close()
 
     return player_id, starting_location
+
+
+
+
+
+# valitaan maanosa
+def game_airports():
+    cursor = conn.cursor()
+    cursor.execute("select distinct continent from airport where continent is not null")
+    continents = [row[0] for row in cursor.fetchall()]
+    print(continents)
+
+
+    chosen_continent = random.choice(continents)
+    print(f"Valittu maanosa: {chosen_continent}")
+
+#valitaan sieltä 30 lentokentän ident
+    cursor.execute('''
+    select ident
+    from airport
+    where continent = %s
+    limit 30
+    ''',(chosen_continent,))
+
+
+
+    chosen_airports = [row[0] for row in cursor.fetchall()]
+    print(f"valitut lentokentät ovat: {chosen_airports}")
+
+    special_ident = random.choice(chosen_airports)
+
+
+# jos valitun lentokentän ident on sama kuin special_ident --> lentokenttä on special
+    for ident in chosen_airports:
+        special = 1 if ident == special_ident else 0
+        cursor.execute('''
+        insert into chosen_airports (ident, special, visited)
+        values(%s, %s, 0)
+        ''',(ident, special))
+
+    conn.commit()
