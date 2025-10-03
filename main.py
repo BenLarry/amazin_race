@@ -29,9 +29,6 @@ def add_player(name, starting_points=1000):
     return player_id, starting_location
 
 
-
-
-
 # valitaan maanosa
 def game_airports():
     cursor = conn.cursor()
@@ -68,3 +65,36 @@ def game_airports():
         ''',(ident, special))
 
     conn.commit()
+
+def move_player():
+    pass
+
+def select_continent():
+    pass
+
+def set_end_position():
+    pass
+
+def set_start_position():
+    pass
+
+def is_game_over_points():
+    pass
+
+def is_game_over_location():
+    pass
+
+def add_points():
+    pass
+
+def remove_points():
+    pass
+
+def set_airport_visited():
+    pass
+
+def main():
+    print("main")
+
+
+main()
