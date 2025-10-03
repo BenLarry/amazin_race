@@ -75,14 +75,32 @@ def select_continent():
     continent = [row[0] for row in cursor.fetchall()]
 
     chosen_continent = random.choice(continent)
-    print(chosen_continent)
     pass
 
 def set_end_position():
-    pass
+    sql = "SELECT * FROM chosen_airports"
+    cursor = conn.cursor()
+    cursor.execute(sql)
+    all_airports = cursor.fetchall()
+    end_airport = random.choice(all_airports)[0]
+    print(end_airport)
+
+    return end_airport
 
 def set_start_position():
-    pass
+    sql = "SELECT * FROM chosen_airports"
+    cursor = conn.cursor()
+    cursor.execute(sql)
+    all_airports = cursor.fetchall()
+    starting_airport = random.choice(all_airports)[0]
+    print(starting_airport)
+
+    return starting_airport
+
+def check_if_location_same(start, end):
+    while start == end:
+        end = set_end_position()
+    return False
 
 def is_game_over_points():
     pass
@@ -90,49 +108,28 @@ def is_game_over_points():
 def is_game_over_location():
     pass
 
-def add_points():
-    pass
+def add_points(player, amount):
+    total = player[2] + amount
+    sql = ("UPDATE player SET Points = %s where ID = %s")
+    cursor = conn.cursor()
+    cursor.execute(sql, (total, player[0]))
+    player = cursor.fetchall()
+    return player
 
-def remove_points():
 
-    pass
+def remove_points(player, amount):
+    total = player[2] - amount
+    sql = ("UPDATE player SET Points = %s where ID = %s")
+    cursor = conn.cursor()
+    cursor.execute(sql, (total, player[0]))
+    player = cursor.fetchall()
+    return player
+
 
 def set_airport_visited():
-    cursor = conn.cursor()
-    sql = "select ident from chosen_airports"
-    cursor.execute(sql)
-    idents = [row[0] for row in cursor.fetchall()]
-
-    sql = "select location from player"
-    cursor.execute(sql)
-    location = cursor.fetchone()[0]
-    print(location)
-
-    for ident in idents:
-        visited = 1 if ident == location else 0
-        cursor.execute('''
-                update chosen_airports
-                set visited = %s
-                where ident = %s
-                ''', (visited, ident))
-        conn.commit()
     pass
-
-
-def get_player():
-   cursor = conn.cursor(dictionary=True)
-   sql = "select * from player order by id desc limit 1"
-   cursor.execute(sql,)
-   player = cursor.fetchone()
-   print(player['ID'])
-   return player
-
-
-
-
 
 def main():
     print("main")
-    get_player()
 
 main()
