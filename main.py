@@ -97,13 +97,10 @@ def set_start_position():
 
     return starting_airport
 
-
 def check_if_location_same(start, end):
     while start == end:
         end = set_end_position()
     return False
-
-
 
 def is_game_over_points():
     pass
@@ -111,17 +108,28 @@ def is_game_over_points():
 def is_game_over_location():
     pass
 
-def add_points():
-    pass
+def add_points(player, amount):
+    total = player[2] + amount
+    sql = ("UPDATE player SET Points = %s where ID = %s")
+    cursor = conn.cursor()
+    cursor.execute(sql, (total, player[0]))
+    player = cursor.fetchall()
+    return player
 
-def remove_points():
-    pass
+
+def remove_points(player, amount):
+    total = player[2] - amount
+    sql = ("UPDATE player SET Points = %s where ID = %s")
+    cursor = conn.cursor()
+    cursor.execute(sql, (total, player[0]))
+    player = cursor.fetchall()
+    return player
+
 
 def set_airport_visited():
     pass
 
 def main():
     print("main")
-
 
 main()
