@@ -125,9 +125,35 @@ def remove_points(player, amount):
     player = cursor.fetchall()
     return player
 
-
 def set_airport_visited():
-    pass
+    cursor = conn.cursor()
+    sql = "select ident from chosen_airports"
+    cursor.execute(sql)
+    idents = [row[0] for row in cursor.fetchall()]
+
+    sql = "select location from player"
+    cursor.execute(sql)
+    location = cursor.fetchone()[0]
+    print(location)
+
+    for ident in idents:
+        visited = 1 if ident == location else 0
+        cursor.execute('''
+                update chosen_airports
+                set visited = %s
+                where ident = %s
+                ''', (visited, ident))
+        conn.commit()
+
+
+def get_player():
+   cursor = conn.cursor(dictionary=True)
+   sql = "select * from player order by id desc limit 1"
+   cursor.execute(sql,)
+   player = cursor.fetchone()
+   print(player['ID'])
+   return player
+
 
 def main():
     print("main")
