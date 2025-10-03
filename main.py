@@ -75,14 +75,35 @@ def select_continent():
     continent = [row[0] for row in cursor.fetchall()]
 
     chosen_continent = random.choice(continent)
-
     pass
 
 def set_end_position():
-    pass
+    sql = "SELECT * FROM chosen_airports"
+    cursor = conn.cursor()
+    cursor.execute(sql)
+    all_airports = cursor.fetchall()
+    end_airport = random.choice(all_airports)[0]
+    print(end_airport)
+
+    return end_airport
 
 def set_start_position():
-    pass
+    sql = "SELECT * FROM chosen_airports"
+    cursor = conn.cursor()
+    cursor.execute(sql)
+    all_airports = cursor.fetchall()
+    starting_airport = random.choice(all_airports)[0]
+    print(starting_airport)
+
+    return starting_airport
+
+
+def check_if_location_same(start, end):
+    while start == end:
+        end = set_end_position()
+    return False
+
+
 
 def is_game_over_points():
     pass
