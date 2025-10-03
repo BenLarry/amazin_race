@@ -70,6 +70,12 @@ def move_player():
     pass
 
 def select_continent():
+    cursor = conn.cursor()
+    cursor.execute("select distinct continent from airport where continent is not null")
+    continent = [row[0] for row in cursor.fetchall()]
+
+    chosen_continent = random.choice(continent)
+
     pass
 
 def set_end_position():
