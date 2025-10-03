@@ -75,7 +75,7 @@ def select_continent():
     continent = [row[0] for row in cursor.fetchall()]
 
     chosen_continent = random.choice(continent)
-
+    print(chosen_continent)
     pass
 
 def set_end_position():
@@ -94,13 +94,45 @@ def add_points():
     pass
 
 def remove_points():
+
     pass
 
 def set_airport_visited():
+    cursor = conn.cursor()
+    sql = "select ident from chosen_airports"
+    cursor.execute(sql)
+    idents = [row[0] for row in cursor.fetchall()]
+
+    sql = "select location from player"
+    cursor.execute(sql)
+    location = cursor.fetchone()[0]
+    print(location)
+
+    for ident in idents:
+        visited = 1 if ident == location else 0
+        cursor.execute('''
+                update chosen_airports
+                set visited = %s
+                where ident = %s
+                ''', (visited, ident))
+        conn.commit()
     pass
+
+
+def get_player():
+   cursor = conn.cursor(dictionary=True)
+   sql = "select * from player order by id desc limit 1"
+   cursor.execute(sql,)
+   player = cursor.fetchone()
+   print(player['ID'])
+   return player
+
+
+
+
 
 def main():
     print("main")
-
+    get_player()
 
 main()
