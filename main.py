@@ -9,13 +9,6 @@ conn = mysql.connector.connect(
         autocommit=True
     )
 
-sql = 'SELECT * FROM task'
-cursor = conn.cursor()
-cursor.execute(sql)
-x = cursor.fetchall()
-
-print(x)
-
 def add_player(name, starting_points=1000):
 
     cursor = conn.cursor()
