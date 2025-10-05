@@ -80,11 +80,11 @@ def select_continent():
 
 def set_end_position():
     sql = "SELECT * FROM chosen_airports"
-    cursor = conn.cursor()
+    cursor = conn.cursor(dictionary=True)
     cursor.execute(sql)
     all_airports = cursor.fetchall()
-    end_airport = random.choice(all_airports)[0]
-    print(end_airport)
+    cursor.close()
+    end_airport = random.choice(all_airports)
 
     return end_airport
 
@@ -161,6 +161,9 @@ def main():
     # IF OLD GAME DONE SETUP A NEW GAME
 
     # ELSE GO TO OLD GAME
+
+    x = set_end_position()
+    print(x['ID'])
 
 
     print("main")
