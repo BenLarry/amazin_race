@@ -148,9 +148,8 @@ def set_airport_visited():
 def get_player():
    cursor = conn.cursor(dictionary=True)
    sql = "select * from player order by id desc limit 1"
-   cursor.execute(sql,)
+   cursor.execute(sql)
    player = cursor.fetchone()
-   print(player['ID'])
    return player
 
 
@@ -158,6 +157,11 @@ def main():
     #CHECK IF OLD GAME IS STILL GOING ON
 
     # IF OLD GAME DONE SETUP A NEW GAME
+
+    # ELSE GO TO OLD GAME
+
+    x = get_player()
+    print(x)
 
 
 
