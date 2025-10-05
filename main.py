@@ -9,8 +9,7 @@ conn = mysql.connector.connect(
         autocommit=True
     )
 
-def add_player(name, starting_points=1000):
-
+def create_player(name, starting_points=1000):
     cursor = conn.cursor()
     cursor.execute("select ident from chosen_airports")
     airports = cursor.fetchall()
@@ -154,16 +153,35 @@ def get_player():
    player = cursor.fetchone()
    return player
 
+def delete_old_airports():
+    sql = "DELETE FROM chosen_airports"
+    cursor = conn.cursor()
+    cursor.execute(sql)
+
+def delete_old_tasks():
+    sql = "DELETE FROM chosen_tasks"
+    cursor = conn.cursor()
+    cursor.execute(sql)
+    
+
 
 def main():
     #CHECK IF OLD GAME IS STILL GOING ON
 
     # IF OLD GAME DONE SETUP A NEW GAME
-
+        #1. drop old chosen_airports
+        #2. drop old chosen_questions
+        #3. choose new continent
+        #4. choose the 30 new airports THAT ARE NOT CLOSED
+        #5. choose new 90 questions
+        #6. create a player
+        #7. set starting location
+            #assign player on starting location
+            #set starting location visisted
+            #set ending location
     # ELSE GO TO OLD GAME
-
-    x = set_end_position()
-    print(x['ID'])
+    x = delete_old_airports()
+    print(x)
 
 
     print("main")
