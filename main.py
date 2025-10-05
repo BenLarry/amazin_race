@@ -24,7 +24,6 @@ def add_player(name, starting_points=1000):
     print(f"Pelaajan nimi: {name}, ID: {player_id}, lokaatio on: {starting_location}")
 
     cursor.close()
-    conn.close()
 
     return player_id, starting_location
 
@@ -156,6 +155,13 @@ def get_player():
 
 
 def main():
+    #CHECK IF OLD GAME IS STILL GOING ON
+
+    # IF OLD GAME DONE SETUP A NEW GAME
+
+
+
+
     print("main")
 
 main()
