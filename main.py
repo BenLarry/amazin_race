@@ -69,12 +69,14 @@ def move_player():
     pass
 
 def select_continent():
+    sql = "select distinct continent from airport where continent is not null"
     cursor = conn.cursor()
-    cursor.execute("select distinct continent from airport where continent is not null")
+    cursor.execute(sql)
     continent = [row[0] for row in cursor.fetchall()]
+    cursor.close()
 
     chosen_continent = random.choice(continent)
-    pass
+    return chosen_continent
 
 def set_end_position():
     sql = "SELECT * FROM chosen_airports"
@@ -159,11 +161,6 @@ def main():
     # IF OLD GAME DONE SETUP A NEW GAME
 
     # ELSE GO TO OLD GAME
-
-    x = get_player()
-    print(x)
-
-
 
 
     print("main")
