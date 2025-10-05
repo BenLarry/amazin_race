@@ -11,12 +11,10 @@ conn = mysql.connector.connect(
 
 def create_player(name, starting_points=1000):
     cursor = conn.cursor()
-    cursor.execute("select ident from chosen_airports")
-    airports = cursor.fetchall()
-    starting_location = random.choice(airports)[0]
+    starting_location = set_start_position()
 
-    sql = "insert into player (name, points, location) VALUES(%s, %s, %s)"
-    cursor.execute(sql, (name, starting_points, starting_location))
+    sql = "INSERT INTO player (name, points, location) VALUES(%s, %s, %s)"
+    cursor.execute(sql, (name, starting_points, starting_location["ident"]))
     conn.commit()
 
     player_id = cursor.lastrowid
@@ -26,30 +24,16 @@ def create_player(name, starting_points=1000):
 
     return player_id, starting_location
 
-
-# valitaan maanosa
-def game_airports():
+def game_airports(continent):
     cursor = conn.cursor()
-    cursor.execute("select distinct continent from airport where continent is not null")
-    continents = [row[0] for row in cursor.fetchall()]
-    print(continents)
-
-
-    chosen_continent = random.choice(continents)
-    print(f"Valittu maanosa: {chosen_continent}")
-
-#valitaan sieltä 30 lentokentän ident
     cursor.execute('''
     select ident
     from airport
     where continent = %s
     limit 30
-    ''',(chosen_continent,))
-
-
+    ''',(continent,))
 
     chosen_airports = [row[0] for row in cursor.fetchall()]
-    print(f"valitut lentokentät ovat: {chosen_airports}")
 
     special_ident = random.choice(chosen_airports)
 
@@ -89,10 +73,10 @@ def set_end_position():
 
 def set_start_position():
     sql = "SELECT * FROM chosen_airports"
-    cursor = conn.cursor()
+    cursor = conn.cursor(dictionary=True)
     cursor.execute(sql)
     all_airports = cursor.fetchall()
-    starting_airport = random.choice(all_airports)[0]
+    starting_airport = random.choice(all_airports)
     print(starting_airport)
 
     return starting_airport
@@ -163,6 +147,13 @@ def delete_old_tasks():
     cursor = conn.cursor()
     cursor.execute(sql)
     
+def setup_game(name):
+    delete_old_airports()
+    delete_old_tasks()
+    game_airports(select_continent())
+    #function to choose questions for game
+    create_player(name)
+    
 
 
 def main():
@@ -180,8 +171,10 @@ def main():
             #set starting location visisted
             #set ending location
     # ELSE GO TO OLD GAME
-    x = delete_old_airports()
-    print(x)
+    xd = input("give name")
+    x = game_airports(select_continent())
+    y = create_player(xd)
+    print(y)
 
 
     print("main")
