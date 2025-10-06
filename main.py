@@ -1,15 +1,13 @@
 import mysql.connector
 import random
-
 conn = mysql.connector.connect(
-    host='mysql.metropolia.fi',
-    port=3306,
-    database='karimbe',
-    user='karimbe',
-    password='MetropoliaPass',
-    autocommit=True
-)
-
+        host='mysql.metropolia.fi',
+        port=3306,
+        database='karimbe',
+        user='karimbe',
+        password='MetropoliaPass',
+        autocommit=True
+    )
 
 def create_player(name, starting_points=1000):
     cursor = conn.cursor()
@@ -24,7 +22,6 @@ def create_player(name, starting_points=1000):
 
     return player_id, starting_location
 
-
 def select_game_airports(continent):
     sql_select = "SELECT ident FROM airport WHERE continent = %s AND name != 'closed' LIMIT 30"
     cursor = conn.cursor(dictionary=True)
@@ -37,33 +34,8 @@ def select_game_airports(continent):
 
     cursor.close()
 
-<<<<<<< HEAD
-
-def select_game_tasks(player):
-    sql_easy = "SELECT "
-    sql_medium = 0
-    sql_hard = 0
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute()
-=======
-def special_airport():
-    cursor = conn.cursor(dictionary=True)
-    sql = "select ident from chosen_airports"
-    cursor.execute(sql)
-    airports = cursor.fetchall()
-    s_airport = random.choice(airports)
-    special = 1  if s_airport == airports else 0
-    sql_update = "update chosen_airports set special = %s where ident = %s"
-    cursor.execute(sql_update,(1,s_airport['ident']) )
-
-
-
-
->>>>>>> 3177f16d2b69509abd20fc5d35e6b62f4b8d8e86
-
 def move_player():
     pass
-
 
 def select_continent():
     sql = "select distinct continent from airport where continent is not null"
@@ -75,7 +47,6 @@ def select_continent():
     chosen_continent = random.choice(continent)
     return chosen_continent
 
-
 def set_end_position():
     sql = "SELECT * FROM chosen_airports"
     cursor = conn.cursor(dictionary=True)
@@ -85,7 +56,6 @@ def set_end_position():
     end_airport = random.choice(all_airports)
 
     return end_airport
-
 
 def set_start_position():
     sql = "SELECT * FROM chosen_airports"
@@ -97,20 +67,16 @@ def set_start_position():
 
     return starting_airport
 
-
 def check_if_location_same(start, end):
     while start == end:
         end = set_end_position()
     return False
 
-
 def is_game_over_points():
     pass
 
-
 def is_game_over_location():
     pass
-
 
 def add_points(player, amount):
     total = player[2] + amount
@@ -123,12 +89,11 @@ def add_points(player, amount):
 
 def remove_points(player, amount):
     total = player[2] - amount
-    sql = "UPDATE player SET Points = %s where ID = %s"
+    sql = ("UPDATE player SET Points = %s where ID = %s")
     cursor = conn.cursor()
     cursor.execute(sql, (total, player[0]))
     player = cursor.fetchall()
     return player
-
 
 def set_airport_visited():
     cursor = conn.cursor()
@@ -152,56 +117,50 @@ def set_airport_visited():
 
 
 def get_player():
-    cursor = conn.cursor(dictionary=True)
-    sql = "select * from player order by id desc limit 1"
-    cursor.execute(sql)
-    player = cursor.fetchone()
-    return player
-
+   cursor = conn.cursor(dictionary=True)
+   sql = "select * from player order by id desc limit 1"
+   cursor.execute(sql)
+   player = cursor.fetchone()
+   return player
 
 def delete_old_airports():
     sql = "DELETE FROM chosen_airports"
     cursor = conn.cursor()
     cursor.execute(sql)
 
-
 def delete_old_tasks():
     sql = "DELETE FROM chosen_tasks"
     cursor = conn.cursor()
     cursor.execute(sql)
-
-
+    
 def setup_game(player_name):
     delete_old_airports()
     delete_old_tasks()
     select_game_airports(select_continent())
-<<<<<<< HEAD
     #function to choose questions for game
-=======
-    # function to choose questions for game
->>>>>>> 3177f16d2b69509abd20fc5d35e6b62f4b8d8e86
     create_player(player_name)
+    
 
 
 def main():
-    # CHECK IF OLD GAME IS STILL GOING ON
+    #CHECK IF OLD GAME IS STILL GOING ON
 
     # IF OLD GAME DONE SETUP A NEW GAME
-    # 1. drop old chosen_airports
-    # 2. drop old chosen_questions
-    # 3. choose new continent
-    # 4. choose the 30 new airports THAT ARE NOT CLOSED
-    # 5. choose new 90 questions
-    # 6. create a player
-    # 7. set starting location
-    # assign player on starting location
-    # set starting location visisted
-    # set ending location
+        #1. drop old chosen_airports
+        #2. drop old chosen_questions
+        #3. choose new continent
+        #4. choose the 30 new airports THAT ARE NOT CLOSED
+        #5. choose new 90 questions
+        #6. create a player
+        #7. set starting location
+            #assign player on starting location
+            #set starting location visisted
+            #set ending location
     # ELSE GO TO OLD GAME
     y = select_game_airports(select_continent())
     print(y)
 
-    print("main")
 
+    print("main")
 
 main()
