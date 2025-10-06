@@ -34,6 +34,14 @@ def select_game_airports(continent):
 
     cursor.close()
 
+
+def select_game_tasks(player):
+    sql_easy = "SELECT "
+    sql_medium = 0
+    sql_hard = 0
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute()
+
 def move_player():
     pass
 
@@ -136,7 +144,7 @@ def delete_old_tasks():
 def setup_game(player_name):
     delete_old_airports()
     delete_old_tasks()
-    game_airports(select_continent())
+    select_game_airports(select_continent())
     #function to choose questions for game
     create_player(player_name)
     
@@ -157,7 +165,6 @@ def main():
             #set starting location visisted
             #set ending location
     # ELSE GO TO OLD GAME
-    delete_old_airports()
     y = select_game_airports(select_continent())
     print(y)
 
