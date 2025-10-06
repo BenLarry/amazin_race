@@ -1,5 +1,6 @@
 import mysql.connector
 import random
+import geopy
 
 conn = mysql.connector.connect(
     host='mysql.metropolia.fi',
@@ -51,9 +52,21 @@ def special_airport():
 
 
 
-def move_player():
-    pass
+def move_player(player, airport):
+   cursor = conn.cursor()
+   sql = "update player set location = %s where id = %s"
+   cursor.execute(sql, (airport,player['ID']))
+   cursor.fetchone()
 
+
+
+
+
+
+
+
+def calculate_price():
+    cursor = conn.cursor()
 
 def select_continent():
     sql = "select distinct continent from airport where continent is not null"
@@ -93,11 +106,11 @@ def check_if_location_same(start, end):
         end = set_end_position()
     return False
 
-
+# kun voitat pelin laskee pelaajaan pisteet
 def is_game_over_points():
     pass
 
-
+# kun voitat pelin katsoo pelaajan lokaation
 def is_game_over_location():
     pass
 
@@ -184,10 +197,10 @@ def main():
     # set starting location visisted
     # set ending location
     # ELSE GO TO OLD GAME
-    delete_old_airports()
-    y = select_game_airports(select_continent())
-    print(y)
 
+
+    player = get_player()
+    move_player(player, '5VA9')
     print("main")
 
 
