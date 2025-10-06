@@ -113,7 +113,7 @@ def add_points(player, amount):
 
 def remove_points(player, amount):
     total = player[2] - amount
-    sql = ("UPDATE player SET Points = %s where ID = %s")
+    sql = "UPDATE player SET Points = %s where ID = %s"
     cursor = conn.cursor()
     cursor.execute(sql, (total, player[0]))
     player = cursor.fetchall()
@@ -164,7 +164,7 @@ def delete_old_tasks():
 def setup_game(player_name):
     delete_old_airports()
     delete_old_tasks()
-    game_airports(select_continent())
+    select_game_airports(select_continent())
     # function to choose questions for game
     create_player(player_name)
 
