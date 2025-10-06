@@ -1,6 +1,6 @@
 import mysql.connector
 import random
-import geopy
+from geopy import distance
 
 conn = mysql.connector.connect(
     host='mysql.metropolia.fi',
@@ -54,8 +54,28 @@ def move_player(player, airport):
    cursor.execute(sql, (airport,player['ID']))
    cursor.fetchone()
 
+
+
+
+
+
+
+
 def calculate_price():
     cursor = conn.cursor()
+    sql ="select latitude_deg, longitude_deg from airport where ident = %s"
+    cursor.execute(sql,(airport, ))
+    x = cursor.fetchone()
+
+    sql_player_airport = "select latitude_deg, longitude_deg from airport where ident = %s"
+    cursor.execute(sql_player_airport, (player['Location'],))
+    y = cursor.fetchone()
+
+    km = distance.distance(x, y).km
+
+    price = km * 0.01
+    print(km)
+    return price
 
 def select_continent():
     sql = "select distinct continent from airport where continent is not null"
@@ -187,9 +207,8 @@ def main():
     # set ending location
     # ELSE GO TO OLD GAME
 
-
     player = get_player()
-    move_player(player, '5VA9')
+    calculate_price(player, '5WA6')
     print("main")
 
 
