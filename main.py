@@ -18,8 +18,6 @@ def create_player(name, starting_points=1000):
     conn.commit()
 
     player_id = cursor.lastrowid
-    print(f"Pelaajan nimi: {name}, ID: {player_id}, lokaatio on: {starting_location}")
-
     cursor.close()
 
     return player_id, starting_location
@@ -147,12 +145,12 @@ def delete_old_tasks():
     cursor = conn.cursor()
     cursor.execute(sql)
     
-def setup_game(name):
+def setup_game(player_name):
     delete_old_airports()
     delete_old_tasks()
     game_airports(select_continent())
     #function to choose questions for game
-    create_player(name)
+    create_player(player_name)
     
 
 
