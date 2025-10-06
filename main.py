@@ -21,18 +21,16 @@ def create_player(name, starting_points=1000):
     cursor.close()
 
     return player_id, starting_location
+def game_airports(continent):
+    cursor = conn.cursor()
+    cursor.execute('''
+    select ident
+    from airport
+    where continent = %s
+    limit 30
+    ''',(continent,))
 
-def select_game_airports(continent):
-    sql_select = "SELECT ident FROM airport WHERE continent = %s AND name != 'closed' LIMIT 30"
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute(sql_select, (continent,))
-
-    chosen_airports = cursor.fetchall()
-    sql_update = "INSERT INTO chosen_airports(ident, special, visited) VALUES(%s, %s, %s)"
-    for airport in chosen_airports:
-        cursor.execute(sql_update, (airport['ident'], 0, 0))
-
-    cursor.close()
+    chosen_airports = [row[0] for row in cursor.fetchall()
 
 def move_player():
     pass
@@ -46,6 +44,18 @@ def select_continent():
 
     chosen_continent = random.choice(continent)
     return chosen_continent
+
+def special_airport():
+    cursor = conn.cursor(dictionary=True)
+    sql = "select ident from chosen_airports"
+    cursor.execute(sql)
+    airports = cursor.fetchall()
+    s_airport = random.choice(airports)
+    special = 1  if s_airport == airports else 0
+    sql_update = "update chosen_airports set special = %s where ident = %s"
+    cursor.execute(sql_update,(1,s_airport['ident']) )
+
+
 
 def set_end_position():
     sql = "SELECT * FROM chosen_airports"
@@ -157,8 +167,9 @@ def main():
             #set starting location visisted
             #set ending location
     # ELSE GO TO OLD GAME
-    delete_old_airports()
-    y = select_game_airports(select_continent())
+    xd = input("give name")
+    x = game_airports(select_continent())
+    y = create_player(xd)
     print(y)
 
 
