@@ -178,8 +178,11 @@ def setup_game(player_name):
     delete_old_airports()
     delete_old_tasks()
     select_game_airports(select_continent())
-    # function to choose questions for game
     create_player(player_name)
+    select_game_tasks()
+    # function to choose questions for game
+    
+
 
 def main():
     # CHECK IF OLD GAME IS STILL GOING ON
@@ -196,8 +199,11 @@ def main():
     # set starting location visisted
     # set ending location
     # ELSE GO TO OLD GAME
+    menu_choice = int(input("[1] Uusipeli\n[2] Jatka peliä\n"))
+    if menu_choice == 1:
+        player_name = input("Nimi: ")
+        print(player_name)
 
-    delete_old_tasks()
     print("main")
 
 
