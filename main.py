@@ -54,14 +54,7 @@ def move_player(player, airport):
    cursor.execute(sql, (airport,player['ID']))
    cursor.fetchone()
 
-
-
-
-
-
-
-
-def calculate_price():
+def calculate_price(player, airport):
     cursor = conn.cursor()
     sql ="select latitude_deg, longitude_deg from airport where ident = %s"
     cursor.execute(sql,(airport, ))
@@ -105,7 +98,6 @@ def set_start_position():
     cursor.execute(sql)
     all_airports = cursor.fetchall()
     starting_airport = random.choice(all_airports)
-    print(starting_airport)
 
     return starting_airport
 
@@ -142,27 +134,11 @@ def remove_points(player, amount):
     return player
 
 
-def set_airport_visited():
-    cursor = conn.cursor()
-    sql = "select ident from chosen_airports"
-    cursor.execute(sql)
-    idents = [row[0] for row in cursor.fetchall()]
-
-    sql = "select location from player"
-    cursor.execute(sql)
-    location = cursor.fetchone()[0]
-    print(location)
-
-    for ident in idents:
-        visited = 1 if ident == location else 0
-        cursor.execute('''
-                update chosen_airports
-                set visited = %s
-                where ident = %s
-                ''', (visited, ident))
-        conn.commit()
-
-
+def set_airport_visited(airport):
+    sql = "UPDATE chosen_airports SET visited = 1 WHERE ident = %s"
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute(sql, (airport['ident'],))
+    
 def get_player():
     cursor = conn.cursor(dictionary=True)
     sql = "select * from player order by id desc limit 1"
@@ -207,8 +183,7 @@ def main():
     # set ending location
     # ELSE GO TO OLD GAME
 
-    player = get_player()
-    calculate_price(player, '5WA6')
+    select_game_tasks(1)
     print("main")
 
 
