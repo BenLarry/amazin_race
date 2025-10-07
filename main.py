@@ -55,13 +55,13 @@ def calculate_price(player, airport):
     cursor = conn.cursor()
     sql ="select latitude_deg, longitude_deg from airport where ident = %s"
     cursor.execute(sql,(airport, ))
-    x = cursor.fetchone()
+    destination_coords = cursor.fetchone()
 
     sql_player_airport = "select latitude_deg, longitude_deg from airport where ident = %s"
     cursor.execute(sql_player_airport, (player['Location'],))
-    y = cursor.fetchone()
+    player_coords = cursor.fetchone()
 
-    km = distance.distance(x, y).km
+    km = distance.distance(destination_coords, player_coords).km
 
     price = km * 0.01
     print(km)
