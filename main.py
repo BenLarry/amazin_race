@@ -102,11 +102,11 @@ def check_if_location_same(start, end):
     return False
 
 # kun voitat pelin laskee pelaajaan pisteet
-def is_game_over_points():
+def is_game_over_points(player):
     pass
 
 # kun voitat pelin katsoo pelaajan lokaation
-def is_game_over_location():
+def is_game_over_location(player):
     pass
 
 def add_points(player, amount):
@@ -151,6 +151,29 @@ def delete_old_tasks():
     cursor.execute(sql)
     cursor.close()
 
+def select_game_tasks(player):
+    sql_select_tasks = """
+    (
+        SELECT * FROM task WHERE level = 1 ORDER BY RAND() LIMIT 10
+    )
+    UNION ALL
+    (
+        SELECT * FROM task WHERE level = 1 ORDER BY RAND() LIMIT 10
+    )
+    UNION ALL
+    (
+        SELECT * FROM task WHERE level = 1 ORDER BY RAND() LIMIT 10
+    )
+    """
+    
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute(sql_select_tasks)
+    tasks = cursor.fetchall()
+    
+    sql_update_chosen_tasks = "INSERT INTO chosen_tasks(player_ID, task_ID, answered) VALUES(%s, %s, 0)"
+    for task in tasks:
+        cursor.execute(sql_update_chosen_tasks, (player["ID"], task["ID"]))
+
 def setup_game(player_name):
     delete_old_airports()
     delete_old_tasks()
@@ -174,7 +197,7 @@ def main():
     # set ending location
     # ELSE GO TO OLD GAME
 
-    select_game_tasks(1)
+    delete_old_tasks()
     print("main")
 
 
