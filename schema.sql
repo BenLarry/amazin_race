@@ -34,8 +34,8 @@ CREATE TABLE airport (
 CREATE TABLE player(
     ID INT NOT NULL auto_increment,
     name VARCHAR(40) DEFAULT NULL,
-    Points INT DEFAULT NULL,
-    Location VARCHAR(40),
+    points INT DEFAULT NULL,
+    location VARCHAR(40),
     PRIMARY KEY(ID),
     FOREIGN KEY(location) REFERENCES airport(ident)
 )ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -74,8 +74,8 @@ CREATE TABLE task_choices(
 
 CREATE TABLE chosen_tasks(
     ID INT NOT NULL auto_increment,
-    player_id INT,
-    task_id INT,
+    player_ID INT,
+    task_ID INT,
     answered BOOLEAN DEFAULT 0,
     PRIMARY KEY(ID)
 )ENGINE=InnoDB DEFAULT CHARSET=latin1;
