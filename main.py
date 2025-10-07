@@ -138,12 +138,14 @@ def set_airport_visited(airport):
     sql = "UPDATE chosen_airports SET visited = 1 WHERE ident = %s"
     cursor = conn.cursor(dictionary=True)
     cursor.execute(sql, (airport['ident'],))
+    cursor.close()
     
 def get_player():
     cursor = conn.cursor(dictionary=True)
     sql = "select * from player order by id desc limit 1"
     cursor.execute(sql)
     player = cursor.fetchone()
+    cursor.close()
     return player
 
 
@@ -151,12 +153,14 @@ def delete_old_airports():
     sql = "DELETE FROM chosen_airports"
     cursor = conn.cursor()
     cursor.execute(sql)
+    cursor.close()
 
 
 def delete_old_tasks():
     sql = "DELETE FROM chosen_tasks"
     cursor = conn.cursor()
     cursor.execute(sql)
+    cursor.close()
 
 
 def setup_game(player_name):
