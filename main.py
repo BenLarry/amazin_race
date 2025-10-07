@@ -11,20 +11,17 @@ conn = mysql.connector.connect(
     autocommit=True
 )
 
-
 def create_player(name, starting_points=1000):
     cursor = conn.cursor()
     starting_location = set_start_position()
 
     sql = "INSERT INTO player (name, points, location) VALUES(%s, %s, %s)"
     cursor.execute(sql, (name, starting_points, starting_location["ident"]))
-    conn.commit()
 
     player_id = cursor.lastrowid
     cursor.close()
 
     return player_id, starting_location
-
 
 def select_game_airports(continent):
     sql_select = "SELECT ident FROM airport WHERE continent = %s AND name != 'closed' LIMIT 30"
@@ -80,7 +77,6 @@ def select_continent():
     chosen_continent = random.choice(continent)
     return chosen_continent
 
-
 def set_end_position():
     sql = "SELECT * FROM chosen_airports"
     cursor = conn.cursor(dictionary=True)
@@ -91,7 +87,6 @@ def set_end_position():
 
     return end_airport
 
-
 def set_start_position():
     sql = "SELECT * FROM chosen_airports"
     cursor = conn.cursor(dictionary=True)
@@ -100,7 +95,6 @@ def set_start_position():
     starting_airport = random.choice(all_airports)
 
     return starting_airport
-
 
 def check_if_location_same(start, end):
     while start == end:
@@ -115,7 +109,6 @@ def is_game_over_points():
 def is_game_over_location():
     pass
 
-
 def add_points(player, amount):
     total = player[2] + amount
     sql = ("UPDATE player SET Points = %s where ID = %s")
@@ -124,7 +117,6 @@ def add_points(player, amount):
     player = cursor.fetchall()
     return player
 
-
 def remove_points(player, amount):
     total = player[2] - amount
     sql = "UPDATE player SET Points = %s where ID = %s"
@@ -132,7 +124,6 @@ def remove_points(player, amount):
     cursor.execute(sql, (total, player[0]))
     player = cursor.fetchall()
     return player
-
 
 def set_airport_visited(airport):
     sql = "UPDATE chosen_airports SET visited = 1 WHERE ident = %s"
@@ -148,13 +139,11 @@ def get_player():
     cursor.close()
     return player
 
-
 def delete_old_airports():
     sql = "DELETE FROM chosen_airports"
     cursor = conn.cursor()
     cursor.execute(sql)
     cursor.close()
-
 
 def delete_old_tasks():
     sql = "DELETE FROM chosen_tasks"
@@ -162,14 +151,12 @@ def delete_old_tasks():
     cursor.execute(sql)
     cursor.close()
 
-
 def setup_game(player_name):
     delete_old_airports()
     delete_old_tasks()
     select_game_airports(select_continent())
     # function to choose questions for game
     create_player(player_name)
-
 
 def main():
     # CHECK IF OLD GAME IS STILL GOING ON
