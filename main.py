@@ -17,11 +17,13 @@ def create_player(name, starting_points=1000):
 
     sql = "INSERT INTO player (name, points, location) VALUES(%s, %s, %s)"
     cursor.execute(sql, (name, starting_points, starting_location["ident"]))
-
-    player_id = cursor.lastrowid
     cursor.close()
 
-    return player_id, starting_location
+def create_game(player, start_airport, end_airport):
+    cursor = conn.cursor()
+    sql = "INSERT INTO game (player_ID, start_airport, end_airport, is_over) VALUES(%s, %s, %s)"
+    cursor.execute(sql, (player['ID'], start_airport, end_airport))
+
 
 def select_game_airports(continent):
     sql_select = "SELECT ident FROM airport WHERE continent = %s AND name != 'closed' LIMIT 30"
@@ -95,11 +97,6 @@ def set_start_position():
     starting_airport = random.choice(all_airports)
 
     return starting_airport
-
-def check_if_location_same(start, end):
-    while start == end:
-        end = set_end_position()
-    return False
 
 # kun voitat pelin laskee pelaajaan pisteet
 def is_game_over_points(player):
@@ -179,9 +176,24 @@ def setup_game(player_name):
     delete_old_tasks()
     select_game_airports(select_continent())
     create_player(player_name)
-    select_game_tasks()
+    player = get_player()
+    select_game_tasks(player['ID'])
+    start_airport = player['ident']
+    end_airport = set_end_position()
+
+    while(start_airport == end_airport):
+        end_airport = set_end_position()
+    create_game(player, start_airport, end_airport)
     # function to choose questions for game
-    
+    # poista vanhat kysymykset
+    # poista vanhat airport
+    #
+    # valitse maanosa
+    # luo lentokentät valitusta maanosasta
+    # luo pelaaja
+    # luo kysymykset
+    # luo peli 
+
 
 
 def main():
