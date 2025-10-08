@@ -30,7 +30,7 @@ def select_game_airports(continent):
     chosen_airports = cursor.fetchall()
     sql_update = "INSERT INTO chosen_airports(ident, special, visited) VALUES(%s, %s, %s)"
     for airport in chosen_airports:
-        cursor.execute(sql_update, (airport['ident'], 0, 0))
+        cursor.execute(sql_update, (airport["ident"], 0, 0))
 
     cursor.close()
 
@@ -42,12 +42,12 @@ def special_airport():
     s_airport = random.choice(airports)
     special = 1  if s_airport == airports else 0
     sql_update = "update chosen_airports set special = %s where ident = %s"
-    cursor.execute(sql_update,(1,s_airport['ident']) )
+    cursor.execute(sql_update,(1,s_airport["ident"]) )
 
 def move_player(player, airport):
    cursor = conn.cursor()
    sql = "update player set location = %s where id = %s"
-   cursor.execute(sql, (airport,player['ID']))
+   cursor.execute(sql, (airport,player["ID"]))
    cursor.fetchone()
 
 def calculate_price(player, airport):
@@ -57,7 +57,7 @@ def calculate_price(player, airport):
     destination_coords = cursor.fetchone()
 
     sql_player_airport = "select latitude_deg, longitude_deg from airport where ident = %s"
-    cursor.execute(sql_player_airport, (player['location'],))
+    cursor.execute(sql_player_airport, (player["location"],))
     player_coords = cursor.fetchone()
 
     km = distance.distance(destination_coords, player_coords).km
