@@ -11,19 +11,16 @@ conn = mysql.connector.connect(
     autocommit=True
 )
 
-def create_player(name, starting_points=1000):
+def create_player(name, starting_points, start_airport):
     cursor = conn.cursor()
-    starting_location = set_start_position()
-
     sql = "INSERT INTO player (name, points, location) VALUES(%s, %s, %s)"
-    cursor.execute(sql, (name, starting_points, starting_location["ident"]))
+    cursor.execute(sql, (name, starting_points, start_airport["ident"]))
     cursor.close()
 
 def create_game(player, start_airport, end_airport):
     cursor = conn.cursor()
-    sql = "INSERT INTO game (player_ID, start_airport, end_airport, is_over) VALUES(%s, %s, %s)"
-    cursor.execute(sql, (player['ID'], start_airport, end_airport))
-
+    sql = "INSERT INTO game (player_ID, start_airport, end_airport, is_over) VALUES(%s, %s, %s, %s)"
+    cursor.execute(sql, (player["ID"], start_airport["ident"], end_airport["ident"], 0))
 
 def select_game_airports(continent):
     sql_select = "SELECT ident FROM airport WHERE continent = %s AND name != 'closed' LIMIT 30"
@@ -60,7 +57,7 @@ def calculate_price(player, airport):
     destination_coords = cursor.fetchone()
 
     sql_player_airport = "select latitude_deg, longitude_deg from airport where ident = %s"
-    cursor.execute(sql_player_airport, (player['Location'],))
+    cursor.execute(sql_player_airport, (player['location'],))
     player_coords = cursor.fetchone()
 
     km = distance.distance(destination_coords, player_coords).km
@@ -86,7 +83,7 @@ def set_end_position():
     all_airports = cursor.fetchall()
     cursor.close()
     end_airport = random.choice(all_airports)
-
+    print(end_airport)
     return end_airport
 
 def set_start_position():
@@ -175,24 +172,16 @@ def setup_game(player_name):
     delete_old_airports()
     delete_old_tasks()
     select_game_airports(select_continent())
-    create_player(player_name)
-    player = get_player()
-    select_game_tasks(player['ID'])
-    start_airport = player['ident']
+    start_airport = set_start_position()
     end_airport = set_end_position()
-
     while(start_airport == end_airport):
         end_airport = set_end_position()
+
+    create_player(player_name, 1000, start_airport)
+    player = get_player()
+    select_game_tasks(player)
+
     create_game(player, start_airport, end_airport)
-    # function to choose questions for game
-    # poista vanhat kysymykset
-    # poista vanhat airport
-    #
-    # valitse maanosa
-    # luo lentokentät valitusta maanosasta
-    # luo pelaaja
-    # luo kysymykset
-    # luo peli 
 
 
 
@@ -214,7 +203,7 @@ def main():
     menu_choice = int(input("[1] Uusipeli\n[2] Jatka peliä\n"))
     if menu_choice == 1:
         player_name = input("Nimi: ")
-        print(player_name)
+        setup_game(player_name)
 
     print("main")
 
