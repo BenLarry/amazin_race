@@ -104,20 +104,17 @@ def is_game_over_location(player):
     pass
 
 def add_points(player, amount):
-    total = player[2] + amount
+    total = player["points"] + amount
     sql = ("UPDATE player SET Points = %s where ID = %s")
     cursor = conn.cursor()
-    cursor.execute(sql, (total, player[0]))
-    player = cursor.fetchall()
-    return player
+    cursor.execute(sql, (total, player["ID"]))
 
 def remove_points(player, amount):
-    total = player[2] - amount
+    total = player["points"] - amount
     sql = "UPDATE player SET Points = %s where ID = %s"
     cursor = conn.cursor()
-    cursor.execute(sql, (total, player[0]))
-    player = cursor.fetchall()
-    return player
+    cursor.execute(sql, (total, player["ID"]))
+
 
 def set_airport_visited(airport):
     sql = "UPDATE chosen_airports SET visited = 1 WHERE ident = %s"
@@ -204,7 +201,8 @@ def main():
     menu_choice = int(input("[1] Uusipeli\n[2] Jatka peliä\n"))
     if menu_choice == 1:
         player_name = input("Nimi: ")
-        player = setup_game(player_name)
+        player = get_player()
+        remove_points(player, 300)
 
     print("main")
 
