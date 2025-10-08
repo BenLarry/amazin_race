@@ -211,8 +211,15 @@ def main():
     # set starting location visisted
     # set ending location
     # ELSE GO TO OLD GAME
-    print(get_airport_choices(get_player()))
-
+    menu_choice = input("[1] Uusi peli\n[2] Jatka peliä\n")
+    if menu_choice == 1:
+        setup_game()
+        print("Tervetuloa Amazing Race tietovisa-peliin!")
+    elif menu_choice == 2:
+        print("pelin jatke")
+        pass
+    else:
+        print("peli sulkeutuu")
 
     print("main")
 
