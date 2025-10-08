@@ -53,23 +53,17 @@ def move_player(player, airport):
 
 def calculate_price(player, airport):
     cursor = conn.cursor()
-    sql ="select latitude_deg, longitude_deg, name from airport where ident = %s"
+    sql ="select latitude_deg, longitude_deg from airport where ident = %s"
     cursor.execute(sql,(airport, ))
-    destination_point = cursor.fetchone()
-    airport_type = destination_point[2]
-    destination_coords = (destination_point[0], destination_point[1])
-
+    destination_coords = cursor.fetchone()
 
     sql_player_airport = "select latitude_deg, longitude_deg from airport where ident = %s"
-    cursor.execute(sql_player_airport, (player['location'],))
+    cursor.execute(sql_player_airport, (player['Location'],))
     player_coords = cursor.fetchone()
 
     km = distance.distance(destination_coords, player_coords).km
 
     price = km * 0.01
-    if airport_type == "large_airport":
-        price *= 2
-
     print(km)
     return price
 
@@ -206,10 +200,9 @@ def main():
     # set ending location
     # ELSE GO TO OLD GAME
     menu_choice = int(input("[1] Uusipeli\n[2] Jatka peliä\n"))
-
-
-    player = get_player()
-    calculate_price(player, 'AGGH')
+    if menu_choice == 1:
+        player_name = input("Nimi: ")
+        print(player_name)
 
     print("main")
 
