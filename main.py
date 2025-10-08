@@ -182,6 +182,7 @@ def setup_game(player_name):
     select_game_tasks(player)
 
     create_game(player, start_airport, end_airport)
+    return player
 
 
 
@@ -203,7 +204,7 @@ def main():
     menu_choice = int(input("[1] Uusipeli\n[2] Jatka peliä\n"))
     if menu_choice == 1:
         player_name = input("Nimi: ")
-        setup_game(player_name)
+        player = setup_game(player_name)
 
     print("main")
 
