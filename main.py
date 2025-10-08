@@ -65,7 +65,7 @@ def calculate_price(player, airport):
 
     km = distance.distance(destination_coords, player_coords).km
 
-    price = km * 0.01
+    price = km * 0.11
     if airport_type == "large_airport":
         price *= 2
     return int(price)
@@ -133,6 +133,14 @@ def get_player():
     cursor.close()
     return player
 
+def get_game():
+    cursor = conn.cursor(dictionary=True)
+    sql = "select * from game order by id desc limit 1"
+    cursor.execute(sql)
+    game = cursor.fetchone()
+    cursor.close()
+    return game
+
 def delete_old_airports():
     sql = "DELETE FROM chosen_airports"
     cursor = conn.cursor()
@@ -192,7 +200,7 @@ def get_airport_choices(player,):
 
     choice = []
     for airport in results:
-        sql_name = "SELECT airport.type, country.name FROM airport JOIN country ON airport.iso_country = country.iso_country WHERE airport.ident = %s;"
+        sql_name = "SELECT airport.type AS airport, country.name AS country FROM airport JOIN country ON airport.iso_country = country.iso_country WHERE airport.ident = %s;"
         cursor.execute(sql_name, (airport["ident"],))
         result = cursor.fetchone()
         result["price"] = calculate_price(player, airport["ident"])
@@ -201,19 +209,29 @@ def get_airport_choices(player,):
     return choice
     
 
+def print_info_table(player, game):
+    print("----------------------------------------------------------------------------------------------------")
+    print(f'|Sijainti: {player["location"]} Pisteet: {player["points"]} Maali: {game["end_airport"]}           |')
+    print("----------------------------------------------------------------------------------------------------")
 
+def get_game_state(game):
+    cursor = conn.cursor()
+    sql = "SELECT is_over FROM game WHERE ID = %s"
+    cursor.execute(sql, (game["ID"],))
+    result = cursor.fetchone()
+    return result
 
-
-
+def get_task(level):
+    sql = "SELECT * FROM `task` WHERE level = %s AND  ORDER BY RAND() LIMIT 1"
+    result = {
+        "question"
+    }
 
 def main():
-    # assign player on starting location
-    # set starting location visisted
-    # set ending location
-    # ELSE GO TO OLD GAME
-    menu_choice = input("[1] Uusi peli\n[2] Jatka peliä\n")
+    menu_choice = int(input("[1] Uusi peli\n[2] Jatka peliä\n"))
     if menu_choice == 1:
-        setup_game()
+        player_name = input("pelaajan nimi")
+        setup_game(player_name)
         print("Tervetuloa Amazing Race tietovisa-peliin!")
     elif menu_choice == 2:
         print("pelin jatke")
@@ -221,7 +239,56 @@ def main():
     else:
         print("peli sulkeutuu")
 
+    player = get_player()
+    game = get_game()
+    is_over = get_game_state(game)[0]
+    print(is_over)
+    while(not is_over):
+        print_info_table(player, game)
+        airport_choices = get_airport_choices(player)
+
+        for i, airport in enumerate(airport_choices):
+            print(f"[{i+1}] Kohde: {airport['airport']} Maa: {airport['country']} Hinta: {airport['price']} P")
+
+        player_choice = int(input("Valitse lentokentän numero 1-5"))
+
+        match player_choice:
+            case 1:
+                #päivitä pelaajan lokaation kyseseen lentokenttään
+                #poista pelaajalta pisteet lokaation hinnasta
+                #Anna pelaajalle kysymys
+                    #katsoo onko vastaus oikein
+                    #jos oikein päivitä pelaajan pisteet
+                    #laita kysymys answrered 1
+
+                print("It's an apple 🍎")
+            case 2:
+                print("It's a banana 🍌")
+            case 3:
+                print("It's an orange 🍊")
+            case 4:
+                print("It's an orange 🍊")
+            case 5:
+                print("It's an orange 🍊")
+            case _:
+                print("Peli sulkeutuu")
+                return
+
+        is_over = get_game_state(game)
+
     print("main")
 
 
 main()
+
+
+
+#"select task.question, answer.choice
+#from task inner join task_choices on task.ID = task_ID INNER JOIN answer on task_choices.answer_ID = answer.ID WHERE task.ID = 882"
+
+#SELECT task.question, answer.choice, answer.is_correct 
+#FROM chosen_tasks 
+#INNER JOIN task ON chosen_tasks.task_ID = task.ID 
+#INNER JOIN task_choices ON task.ID = task_choices.task_ID
+#INNER JOIN answer ON task_choices.answer_ID = answer.ID
+#WHERE chosen_tasks.answered = 0
