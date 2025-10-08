@@ -93,3 +93,15 @@ CREATE TABLE player_highscore(
     FOREIGN KEY(player_ID) REFERENCES player(ID),
     FOREIGN KEY(highscore_ID) REFERENCES highscore(ID)
 )ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE game(
+    ID INT auto_increment NOT NULL,
+    player_ID INT NOT NULL,
+    start_airport VARCHAR(40),
+    end_airport VARCHAR(40),
+    is_over BOOLEAN NOT NULL DEFAULT 0,
+    PRIMARY KEY(ID),
+    FOREIGN KEY(player_ID) REFERENCES player(ID),
+    FOREIGN KEY(start_airport) REFERENCES airport(ident),
+    FOREIGN KEY(end_airport) REFERENCES airport(ident)
+)ENGINE=InnoDB DEFAULT CHARSET=latin1;
