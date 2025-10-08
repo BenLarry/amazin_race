@@ -63,7 +63,6 @@ def calculate_price(player, airport):
     km = distance.distance(destination_coords, player_coords).km
 
     price = km * 0.01
-    print(km)
     return price
 
 def select_continent():
@@ -83,7 +82,6 @@ def set_end_position():
     all_airports = cursor.fetchall()
     cursor.close()
     end_airport = random.choice(all_airports)
-    print(end_airport)
     return end_airport
 
 def set_start_position():
@@ -184,16 +182,6 @@ def setup_game(player_name):
 
 
 def main():
-    # CHECK IF OLD GAME IS STILL GOING ON
-
-    # IF OLD GAME DONE SETUP A NEW GAME
-    # 1. drop old chosen_airports
-    # 2. drop old chosen_questions
-    # 3. choose new continent
-    # 4. choose the 30 new airports THAT ARE NOT CLOSED
-    # 5. choose new 90 questions
-    # 6. create a player
-    # 7. set starting location
     # assign player on starting location
     # set starting location visisted
     # set ending location
@@ -201,8 +189,12 @@ def main():
     menu_choice = int(input("[1] Uusipeli\n[2] Jatka peliä\n"))
     if menu_choice == 1:
         player_name = input("Nimi: ")
-        player = get_player()
-        remove_points(player, 300)
+        setup_game(player_name)
+    elif menu_choice == 2:
+        pass
+    else:
+        print("Peli sulkeuitui...")
+        return
 
     print("main")
 
