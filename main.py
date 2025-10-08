@@ -52,18 +52,23 @@ def move_player(player, airport):
 
 def calculate_price(player, airport):
     cursor = conn.cursor()
-    sql ="select latitude_deg, longitude_deg from airport where ident = %s"
+    sql ="select latitude_deg, longitude_deg, name from airport where ident = %s"
     cursor.execute(sql,(airport, ))
-    destination_coords = cursor.fetchone()
+
+    destination_point = cursor.fetchone()
+    airport_type = destination_point[2]
+    destination_coords = (destination_point[0], destination_point[1])
 
     sql_player_airport = "select latitude_deg, longitude_deg from airport where ident = %s"
-    cursor.execute(sql_player_airport, (player["location"],))
+    cursor.execute(sql_player_airport, (player['location'],))
     player_coords = cursor.fetchone()
 
     km = distance.distance(destination_coords, player_coords).km
 
     price = km * 0.01
-    return price
+    if airport_type == "large_airport":
+        price *= 2
+    return int(price)
 
 def select_continent():
     sql = "select distinct continent from airport where continent is not null"
@@ -179,6 +184,26 @@ def setup_game(player_name):
     create_game(player, start_airport, end_airport)
     return player
 
+def get_airport_choices(player,):
+    sql = "SELECT ident FROM chosen_airports WHERE visited = 0 ORDER BY RAND() LIMIT 5"
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute(sql)
+    results = cursor.fetchall()
+
+    choice = []
+    for airport in results:
+        sql_name = "SELECT airport.type, country.name FROM airport JOIN country ON airport.iso_country = country.iso_country WHERE airport.ident = %s;"
+        cursor.execute(sql_name, (airport["ident"],))
+        result = cursor.fetchone()
+        result["price"] = calculate_price(player, airport["ident"])
+        choice.append(result)
+
+    return choice
+    
+
+
+
+
 
 
 def main():
@@ -186,15 +211,8 @@ def main():
     # set starting location visisted
     # set ending location
     # ELSE GO TO OLD GAME
-    menu_choice = int(input("[1] Uusipeli\n[2] Jatka peliä\n"))
-    if menu_choice == 1:
-        player_name = input("Nimi: ")
-        setup_game(player_name)
-    elif menu_choice == 2:
-        pass
-    else:
-        print("Peli sulkeuitui...")
-        return
+    print(get_airport_choices(get_player()))
+
 
     print("main")
 
