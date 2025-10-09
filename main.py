@@ -315,15 +315,16 @@ def main():
     while(not game['is_over']):
         game = get_game()
         player = get_player()
-        print_info_table(player, game)
         airport_choices = get_airport_choices(player)
 
         if player["location"] == game["end_airport"]:
             update_game_state(game)
             remove_points(game)
+            print_info_table(player, get_game())
             return
         
-
+        print_info_table(player, game)
+        
         for i, airport in enumerate(airport_choices):
              print(f"[{i+1}] Kohde: {airport['airport']} Maa: {airport['country']} Hinta: {airport['co2']} CO2")
         
