@@ -377,7 +377,6 @@ def main():
                     print("vastasit väärin")
             case 5:
                 move_player(player, airport_choices[4]['ident'])
-                add_co2(game, airport["co2"])
                 add_co2(game, airport_choices[4]["co2"])
                 task = get_task()
                 answer = handle_task_answer(task, game)
