@@ -34,7 +34,6 @@ CREATE TABLE airport (
 CREATE TABLE player(
     ID INT NOT NULL auto_increment,
     name VARCHAR(40) DEFAULT NULL,
-    points INT DEFAULT NULL,
     location VARCHAR(40),
     PRIMARY KEY(ID),
     FOREIGN KEY(location) REFERENCES airport(ident)
@@ -80,18 +79,12 @@ CREATE TABLE chosen_tasks(
     PRIMARY KEY(ID)
 )ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-CREATE TABLE highscore(
-    ID INT NOT NULL auto_increment,
-    score INT NOT NULL DEFAULT 0,
-    PRIMARY KEY(ID)
-)ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
-CREATE TABLE player_highscore(
+CREATE TABLE player_games(
     player_ID INT,
-    highscore_ID INT,
-    PRIMARY KEY(player_ID, highscore_ID),
+    game_ID INT,
+    PRIMARY KEY(player_ID, game_ID),
     FOREIGN KEY(player_ID) REFERENCES player(ID),
-    FOREIGN KEY(highscore_ID) REFERENCES highscore(ID)
+    FOREIGN KEY(game_ID) REFERENCES game(ID)
 )ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 CREATE TABLE game(
@@ -100,6 +93,8 @@ CREATE TABLE game(
     start_airport VARCHAR(40),
     end_airport VARCHAR(40),
     is_over BOOLEAN NOT NULL DEFAULT 0,
+    co2_consumed INT DEFAULT 0,
+    points INT DEFAULT 0,
     PRIMARY KEY(ID),
     FOREIGN KEY(player_ID) REFERENCES player(ID),
     FOREIGN KEY(start_airport) REFERENCES airport(ident),
