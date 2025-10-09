@@ -252,19 +252,32 @@ def get_task():
     }
     return formatted_task
 
-def check_task_answer(task):
+def handle_task_answer(task):
     answer = int(input(f"{task['question']}\n[1] {task['choice_1']['answer']} \n[2] {task['choice_2']['answer']}\n[3] {task['choice_3']['answer']}\n"))
     if answer == task["choice_1"]["ID"]:
+        set_task_answered(task)
         if task["choice_1"]["is_correct"]:
+            print("here")
             pass
     elif answer == task["choice_2"]["ID"]:
+        set_task_answered(task)
         if task["choice_1"]["is_correct"]:
+            #update task to answered
+            print("here")
             pass
     elif answer == task["choice_3"]["ID"]:
+        set_task_answered(task)
+        #update task to answered
         if task["choice_1"]["is_correct"]:
+            print("HERE")
             pass
     else:
         check_task_answer(task)
+
+def set_task_answered(task):
+    sql = ("UPDATE chosen_tasks SET answered = 1 WHERE task_ID = %s")
+    cursor = conn.cursor()
+    cursor.execute(sql, (task["ID"],))
 
 def main():
     menu_choice = int(input("[1] Uusi peli\n[2] Jatka peliä\n"))
@@ -298,7 +311,7 @@ def main():
                 move_player(player, airport_choices[0]['ident'])
                 #add_co2(player, airport_choices[0]['co2'])
                 task = get_task()
-                check_task_answer(task)
+                handle_task_answer(task)
                     #katsoo onko vastaus oikein
                     #jos oikein päivitä pelaajan pisteet
                     #laita kysymys answrered 1
