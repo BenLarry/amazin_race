@@ -113,6 +113,14 @@ def add_points(player, amount):
     cursor = conn.cursor()
     cursor.execute(sql, (total, player["ID"]))
 
+def add_co2(game, co2_price):
+    total = game["co2_consumed"] + co2_price
+    sql = "UPDATE game SET co2_consumed = %s where player_ID = %s"
+    cursor = conn.cursor()
+    cursor.execute(sql, (total, game["player_ID"],))
+
+
+
 def remove_points(player, amount):
     total = player["points"] - amount
     sql = "UPDATE player SET Points = %s where ID = %s"
@@ -250,6 +258,7 @@ def get_task():
     return formatted_task
 
 def main():
+    add_co2(get_game(), 50)
     menu_choice = int(input("[1] Uusi peli\n[2] Jatka peliä\n"))
     if menu_choice == 1:
         player_name = input("pelaajan nimi")
@@ -279,10 +288,10 @@ def main():
         match player_choice:
             case 1:
                 #päivitä pelaajan lokaation kyseseen lentokenttään
-                #poista pelaajalta pisteet lokaation hinnasta
+                # lisää pelaajalle co2 päästöjä
                 #Anna pelaajalle kysymys
                     #katsoo onko vastaus oikein
-                    #jos oikein päivitä pelaajan pisteet
+                    #jos oikein päivitä pelaajan co2 päästöt
                     #laita kysymys answrered 1
 
                 print(get_task())
