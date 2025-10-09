@@ -12,17 +12,17 @@ conn = mysql.connector.connect(
     autocommit=True
 )
 
-def create_player(name, starting_points, start_airport):
+def create_player(name, start_airport):
     cursor = conn.cursor()
-    sql = "INSERT INTO player (name, points, location) VALUES(%s, %s, %s)"
-    cursor.execute(sql, (name, starting_points, start_airport["ident"]))
+    sql = "INSERT INTO player (name, location) VALUES(%s, %s)"
+    cursor.execute(sql, (name, start_airport["ident"]))
     cursor.close()
 
 def create_game(player, start_airport, end_airport):
     cursor = conn.cursor()
-    sql = "INSERT INTO game (player_ID, start_airport, end_airport, is_over) VALUES(%s, %s, %s, %s)"
-    cursor.execute(sql, (player["ID"], start_airport["ident"], end_airport["ident"], 0))
-
+    sql = "INSERT INTO game (player_ID, start_airport, end_airport, is_over, co2_consumed, points) VALUES(%s, %s, %s, %s, %s, %s)"
+    cursor.execute(sql, (player["ID"], start_airport["ident"], end_airport["ident"], 0, 0, 0))
+    cursor.close()
 
 def select_game_airports(continent):
     sql_select = "SELECT ident FROM airport WHERE continent = %s AND name != 'closed' LIMIT 30"
@@ -52,23 +52,24 @@ def move_player(player, airport):
    sql = "update player set location = %s where id = %s"
    cursor.execute(sql, (airport,player["ID"]))
    cursor.fetchone()
+   cursor.close()
 
-def calculate_price(player, airport):
+def calculate_co2(player, airport):
     cursor = conn.cursor()
     sql ="select latitude_deg, longitude_deg, name from airport where ident = %s"
     cursor.execute(sql,(airport, ))
     destination_point = cursor.fetchone()
-    airport_type = destination_point[2]
+
     destination_coords = (destination_point[0], destination_point[1])
     sql_player_airport = "select latitude_deg, longitude_deg from airport where ident = %s"
     cursor.execute(sql_player_airport, (player['location'],))
     player_coords = cursor.fetchone()
+    cursor.close()
 
     km = distance.distance(destination_coords, player_coords).km
 
-    price = km * 0.01
-    if airport_type == "large_airport":
-        price *= 2
+    co2_price = km * 0.20
+    return int(co2_price)
 
 def select_continent():
     sql = "select distinct continent from airport where continent is not null"
@@ -111,8 +112,6 @@ def add_points(player, amount):
     sql = ("UPDATE player SET Points = %s where ID = %s")
     cursor = conn.cursor()
     cursor.execute(sql, (total, player["ID"]))
-
-
 
 def remove_points(player, amount):
     total = player["points"] - amount
@@ -161,11 +160,11 @@ def select_game_tasks(player):
     )
     UNION ALL
     (
-        SELECT * FROM task WHERE level = 1 ORDER BY RAND() LIMIT 10
+        SELECT * FROM task WHERE level = 2 ORDER BY RAND() LIMIT 10
     )
     UNION ALL
     (
-        SELECT * FROM task WHERE level = 1 ORDER BY RAND() LIMIT 10
+        SELECT * FROM task WHERE level = 3 ORDER BY RAND() LIMIT 10
     )
     """
 
@@ -176,6 +175,7 @@ def select_game_tasks(player):
     sql_update_chosen_tasks = "INSERT INTO chosen_tasks(player_ID, task_ID, answered) VALUES(%s, %s, 0)"
     for task in tasks:
         cursor.execute(sql_update_chosen_tasks, (player["ID"], task["ID"]))
+    cursor.close()
 
 def setup_game(player_name):
     delete_old_airports()
@@ -187,7 +187,7 @@ def setup_game(player_name):
     while(start_airport == end_airport):
         end_airport = set_end_position()
 
-    create_player(player_name, 1000, start_airport)
+    create_player(player_name, start_airport)
     player = get_player()
     select_game_tasks(player)
     create_game(player, start_airport, end_airport)
@@ -205,28 +205,49 @@ def get_airport_choices(player,):
         sql_name = "SELECT airport.type AS airport, country.name AS country FROM airport JOIN country ON airport.iso_country = country.iso_country WHERE airport.ident = %s;"
         cursor.execute(sql_name, (airport["ident"],))
         result = cursor.fetchone()
-        result["price"] = calculate_price(player, airport["ident"])
+        result["co2"] = calculate_co2(player, airport["ident"])
         choice.append(result)
 
     return choice
     
 def print_info_table(player, game):
     print("----------------------------------------------------------------------------------------------------")
-    print(f'|Sijainti: {player["location"]} Pisteet: {player["points"]} Maali: {game["end_airport"]}           |')
+    print(f'|Sijainti: {player["location"]} Pisteet: {game["points"]} Maali: {game["end_airport"]}           |')
     print("----------------------------------------------------------------------------------------------------")
 
 def get_game_state(game):
-    cursor = conn.cursor()
+    cursor = conn.cursor(dictionary=True)
     sql = "SELECT is_over FROM game WHERE ID = %s"
     cursor.execute(sql, (game["ID"],))
     result = cursor.fetchone()
     return result
 
-def get_task(level):
-    sql = "SELECT * FROM `task` WHERE level = %s AND  ORDER BY RAND() LIMIT 1"
-    result = {
-        "question"
+def get_task():
+    sql = """
+    SELECT task.question, answer.choice, answer.is_correct
+    FROM (
+        SELECT chosen_tasks.task_ID
+        FROM chosen_tasks
+        INNER JOIN task ON chosen_tasks.task_ID = task.ID
+        WHERE chosen_tasks.answered = 0
+        ORDER BY RAND()
+        LIMIT 1
+        ) AS random_task
+    INNER JOIN task ON random_task.task_ID = task.ID
+    INNER JOIN task_choices ON task.ID = task_choices.task_ID
+    INNER JOIN answer ON task_choices.answer_ID = answer.ID
+    ORDER BY answer.ID;
+    """
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute(sql)
+    result = cursor.fetchall()
+    formatted_task = {
+        "question": result[0]["question"],
+        "choice_1": result[0]["choice"],
+        "choice_2": result[1]["choice"],
+        "choice_3": result[2]["choice"]
     }
+    return formatted_task
 
 def main():
     menu_choice = int(input("[1] Uusi peli\n[2] Jatka peliä\n"))
@@ -244,14 +265,14 @@ def main():
 
     player = get_player()
     game = get_game()
-    is_over = get_game_state(game)[0]
-    print(is_over)
-    while(not is_over):
+    game_state = get_game_state(game)
+    print(game_state)
+    while(not game_state['is_over']):
         print_info_table(player, game)
         airport_choices = get_airport_choices(player)
 
         for i, airport in enumerate(airport_choices):
-            print(f"[{i+1}] Kohde: {airport['airport']} Maa: {airport['country']} Hinta: {airport['price']} P")
+            print(f"[{i+1}] Kohde: {airport['airport']} Maa: {airport['country']} Hinta: {airport['co2']} CO2")
 
         player_choice = int(input("Valitse lentokentän numero 1-5"))
 
@@ -264,7 +285,7 @@ def main():
                     #jos oikein päivitä pelaajan pisteet
                     #laita kysymys answrered 1
 
-                print("It's an apple 🍎")
+                print(get_task())
             case 2:
                 print("It's a banana 🍌")
             case 3:
@@ -277,7 +298,7 @@ def main():
                 print("Peli sulkeutuu")
                 return
 
-        is_over = get_game_state(game)
+        game_state = get_game_state(game)
 
     print("main")
 
