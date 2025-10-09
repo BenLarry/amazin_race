@@ -298,10 +298,19 @@ def set_task_answered(task):
     cursor.execute(sql, (task["ID"],))
 
 def show_highscores():
+    sql = "SELECT player.name, game.points FROM player, game WHERE player.ID = game.player_ID AND game.is_over = 1 ORDER BY game.points DESC LIMIT 10"
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute(sql)
+    result = cursor.fetchall()
+
+    for i, score in enumerate(result):
+        print(f"{i+1}: Nimi: {score['name']} Pisteet: {score['points']}")
+    return result
+
 
 
 def main():
-    menu_choice = int(input("[1] Uusi peli\n[2] Jatka peliä\n[3] Highscores"))
+    menu_choice = int(input("[1] Uusi peli\n[2] Jatka peliä\n[3] Top 10\n"))
     if menu_choice == 1:
         player_name = input("pelaajan nimi")
         setup_game(player_name)
@@ -309,7 +318,8 @@ def main():
     elif menu_choice == 2:
         print("Peli jatkuu")
     elif menu_choice == 3:
-        show_highcores()
+        show_highscores()
+        main()
     else:
         main()
 
@@ -323,6 +333,7 @@ def main():
             update_game_state(game)
             remove_points(game)
             print_info_table(player, get_game())
+            show_highscores()
             return
         
         print_info_table(player, game)
