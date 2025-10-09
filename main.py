@@ -215,7 +215,7 @@ def print_info_table(player, game):
     player_location = get_airport_name(player["location"])
     end_location = get_airport_name(game["end_airport"])
     print("----------------------------------------------------------------------------------------------------")
-    print(f'|Sijainti: {player_location} Pisteet: {game["points"]} Maali: {end_location} co2 päästöt: {game["co2_consumed"]}          |')
+    print(f'|Sijainti: {player_location} | Pisteet: {game["points"]} | Maali: {end_location} | CO2 päästöt: {game["co2_consumed"]}          |')
     print("----------------------------------------------------------------------------------------------------")
 
 def update_game_state(game):
