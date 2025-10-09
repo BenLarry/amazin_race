@@ -120,11 +120,27 @@ def add_co2(game, co2_price):
     cursor.execute(sql, (total, game["player_ID"],))
 
 
-def remove_points(game, total):
+def remove_points(game):
     cursor = conn.cursor()
-    new_points = game['points'] - game['co2_consumed']
-    sql = "update game set co2_consumed = %s, points = %s where ID = %s"
-    cursor.execute(sql, (game['ID'],)
+    co2 = game['co2_consumed']
+    points = game['points']
+    player_id = game['ID']
+    if points > co2:
+        new_points = points - co2
+        new_co2 = 0
+    elif co2 > points:
+        new_points = 0
+        new_co2 = co2 - points
+    else:
+        new_points = 0
+        new_co2 = 0
+
+    sql = "UPDATE game SET points = %s, co2_consumed = %s WHERE ID = %s"
+    cursor.execute(sql, (new_points, new_co2, player_id))
+
+
+
+
 
 
 def set_airport_visited(airport):
@@ -258,7 +274,9 @@ def get_task():
     return formatted_task
 
 def main():
-    remove_points(get_game(),100)
+    #add_points(get_game(),50)
+    #add_co2(get_game(),100)
+    remove_points(get_game())
 
     menu_choice = int(input("[1] Uusi peli\n[2] Jatka peliä\n"))
     if menu_choice == 1:
