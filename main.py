@@ -1,10 +1,6 @@
 import mysql.connector
-
 import random
-
 from geopy import distance
-
-
 
 conn = mysql.connector.connect(
 
@@ -33,7 +29,6 @@ def select_game_airports(continent):
     cursor = conn.cursor(dictionary=True)
     cursor.execute(sql_select, (continent,))
     chosen_airports = cursor.fetchall()
-
     sql_update = "INSERT INTO chosen_airports(ident, special, visited) VALUES(%s, %s, %s)"
 
     for airport in chosen_airports:
@@ -62,11 +57,9 @@ def calculate_price(player, airport):
     cursor = conn.cursor()
     sql ="select latitude_deg, longitude_deg, name from airport where ident = %s"
     cursor.execute(sql,(airport, ))
-
     destination_point = cursor.fetchone()
     airport_type = destination_point[2]
     destination_coords = (destination_point[0], destination_point[1])
-
     sql_player_airport = "select latitude_deg, longitude_deg from airport where ident = %s"
     cursor.execute(sql_player_airport, (player['location'],))
     player_coords = cursor.fetchone()
@@ -76,7 +69,6 @@ def calculate_price(player, airport):
     price = km * 0.01
     if airport_type == "large_airport":
         price *= 2
-    print(km)
 
 def select_continent():
     sql = "select distinct continent from airport where continent is not null"
@@ -95,7 +87,6 @@ def set_end_position():
     all_airports = cursor.fetchall()
     cursor.close()
     end_airport = random.choice(all_airports)
-    print(end_airport)
     return end_airport
 
 def set_start_position():
@@ -107,11 +98,8 @@ def set_start_position():
 
     return starting_airport
 
-
-
 # kun voitat pelin laskee pelaajaan pisteet
 def is_game_over_points(player):
-
     pass
 
 # kun voitat pelin katsoo pelaajan lokaation
@@ -119,28 +107,18 @@ def is_game_over_location(player):
     pass
 
 def add_points(player, amount):
-
     total = player["points"] + amount
-
     sql = ("UPDATE player SET Points = %s where ID = %s")
     cursor = conn.cursor()
-
     cursor.execute(sql, (total, player["ID"]))
 
 
 
 def remove_points(player, amount):
-
     total = player["points"] - amount
-
     sql = "UPDATE player SET Points = %s where ID = %s"
     cursor = conn.cursor()
-
     cursor.execute(sql, (total, player["ID"]))
-
-
-
-
 
 def set_airport_visited(airport):
     sql = "UPDATE chosen_airports SET visited = 1 WHERE ident = %s"
@@ -232,7 +210,6 @@ def get_airport_choices(player,):
 
     return choice
     
-
 def print_info_table(player, game):
     print("----------------------------------------------------------------------------------------------------")
     print(f'|Sijainti: {player["location"]} Pisteet: {player["points"]} Maali: {game["end_airport"]}           |')
@@ -250,10 +227,6 @@ def get_task(level):
     result = {
         "question"
     }
-
-
-
-
 
 def main():
     menu_choice = int(input("[1] Uusi peli\n[2] Jatka peliä\n"))
