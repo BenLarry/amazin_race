@@ -298,18 +298,17 @@ def set_task_answered(task):
     cursor.execute(sql, (task["ID"],))
 
 def main():
-    menu_choice = int(input("[1] Uusi peli\n[2] Jatka peliä\n"))
+    menu_choice = int(input("[1] Uusi peli\n[2] Jatka peliä\n[3] Highscores"))
     if menu_choice == 1:
         player_name = input("pelaajan nimi")
-
         setup_game(player_name)
         print("Tervetuloa Amazing Race tietovisa-peliin!")
     elif menu_choice == 2:
-        print("pelin jatke")
-        pass
-
+        print("Peli jatkuu")
+    elif menu_choice == 3:
+        show_highcores()
     else:
-        print("peli sulkeutuu")
+        main()
 
     game = get_game()
     while(not game['is_over']):
@@ -339,9 +338,6 @@ def main():
                     print("vastasit Oikein")
                 else:
                     print("vastasit väärin")
-                    #katsoo onko vastaus oikein
-                    #jos oikein päivitä pelaajan pisteet
-                    #laita kysymys answrered 1
             case 2:
                 move_player(player, airport_choices[1]['ident'])
                 add_co2(game, airport_choices[1]["co2"])
@@ -351,9 +347,6 @@ def main():
                     print("vastasit Oikein")
                 else:
                     print("vastasit väärin")
-                    #katsoo onko vastaus oikein
-                    #jos oikein päivitä pelaajan pisteet
-                    #laita kysymys answrered 1
             case 3:
                 move_player(player, airport_choices[2]['ident'])
                 add_co2(game, airport_choices[2]["co2"])
@@ -364,9 +357,6 @@ def main():
                     print("vastasit Oikein")
                 else:
                     print("vastasit väärin")
-                    #katsoo onko vastaus oikein
-                    #jos oikein päivitä pelaajan pisteet
-                    #laita kysymys answrered 1
             case 4:
                 move_player(player, airport_choices[3]['ident'])
                 add_co2(game, airport_choices[3]["co2"])
@@ -386,9 +376,6 @@ def main():
                     print("vastasit Oikein")
                 else:
                     print("vastasit väärin")
-                    #katsoo onko vastaus oikein
-                    #jos oikein päivitä pelaajan pisteet
-                    #laita kysymys answrered 1
             case _:
                 return
     print("main")
