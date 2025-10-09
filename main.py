@@ -297,6 +297,9 @@ def set_task_answered(task):
     cursor = conn.cursor()
     cursor.execute(sql, (task["ID"],))
 
+def show_highscores():
+
+
 def main():
     menu_choice = int(input("[1] Uusi peli\n[2] Jatka peliä\n[3] Highscores"))
     if menu_choice == 1:
