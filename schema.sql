@@ -79,14 +79,6 @@ CREATE TABLE chosen_tasks(
     PRIMARY KEY(ID)
 )ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-CREATE TABLE player_games(
-    player_ID INT,
-    game_ID INT,
-    PRIMARY KEY(player_ID, game_ID),
-    FOREIGN KEY(player_ID) REFERENCES player(ID),
-    FOREIGN KEY(game_ID) REFERENCES game(ID)
-)ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
 CREATE TABLE game(
     ID INT auto_increment NOT NULL,
     player_ID INT NOT NULL,
@@ -99,6 +91,14 @@ CREATE TABLE game(
     FOREIGN KEY(player_ID) REFERENCES player(ID),
     FOREIGN KEY(start_airport) REFERENCES airport(ident),
     FOREIGN KEY(end_airport) REFERENCES airport(ident)
+)ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE player_games(
+    player_ID INT,
+    game_ID INT,
+    PRIMARY KEY(player_ID, game_ID),
+    FOREIGN KEY(player_ID) REFERENCES player(ID),
+    FOREIGN KEY(game_ID) REFERENCES game(ID)
 )ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 INSERT INTO task (question, points, level)
@@ -395,7 +395,7 @@ INSERT INTO task_choices (task_ID, answer_ID) VALUES (@task_id, @answer2_id);
 INSERT INTO task_choices (task_ID, answer_ID) VALUES (@task_id, @answer3_id);
 
 INSERT INTO task (question, points, level)
-VALUES ("Mikä kaupunki tunnetaan "Syntien kaupunki" nimellä Yhdysvalloissa?", 50, 1);
+VALUES ("Mikä kaupunki tunnetaan 'Syntien kaupunki' nimellä Yhdysvalloissa?", 50, 1);
 SET @task_id = LAST_INSERT_ID();
 
 INSERT INTO answer (choice, is_correct) VALUES ("Atlantic City", 0);
