@@ -81,23 +81,13 @@ def select_continent():
     chosen_continent = random.choice(continent)
     return chosen_continent
 
-def set_end_position():
-    sql = "SELECT * FROM chosen_airports"
+def select_random_airport():
+    sql = "SELECT * FROM chosen_airports WHERE visited = 0 ORDER BY RAND() LIMIT 1"
     cursor = conn.cursor(dictionary=True)
     cursor.execute(sql)
-    all_airports = cursor.fetchall()
+    airport = cursor.fetchone()
     cursor.close()
-    end_airport = random.choice(all_airports)
-    return end_airport
-
-def set_start_position():
-    sql = "SELECT * FROM chosen_airports"
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute(sql)
-    all_airports = cursor.fetchall()
-    starting_airport = random.choice(all_airports)
-
-    return starting_airport
+    return airport
 
 # kun voitat pelin laskee pelaajaan pisteet
 def is_game_over_points(player):
@@ -181,11 +171,11 @@ def setup_game(player_name):
     delete_old_airports()
     delete_old_tasks()
     select_game_airports(select_continent())
-    start_airport = set_start_position()
-    end_airport = set_end_position()
+    start_airport = select_random_airport()
+    end_airport = select_random_airport()
 
     while(start_airport == end_airport):
-        end_airport = set_end_position()
+        end_airport = select_random_airport()
 
     create_player(player_name, start_airport)
     player = get_player()
@@ -202,7 +192,7 @@ def get_airport_choices(player,):
 
     choice = []
     for airport in results:
-        sql_name = "SELECT airport.type AS airport, country.name AS country FROM airport JOIN country ON airport.iso_country = country.iso_country WHERE airport.ident = %s;"
+        sql_name = "SELECT airport.ident AS ident, airport.type AS airport, country.name AS country FROM airport JOIN country ON airport.iso_country = country.iso_country WHERE airport.ident = %s;"
         cursor.execute(sql_name, (airport["ident"],))
         result = cursor.fetchone()
         result["co2"] = calculate_co2(player, airport["ident"])
@@ -224,7 +214,7 @@ def get_game_state(game):
 
 def get_task():
     sql = """
-    SELECT task.question, answer.choice, answer.is_correct
+    SELECT task.ID, task.question, answer.choice, answer.is_correct
     FROM (
         SELECT chosen_tasks.task_ID
         FROM chosen_tasks
@@ -242,12 +232,39 @@ def get_task():
     cursor.execute(sql)
     result = cursor.fetchall()
     formatted_task = {
+        "ID": result[0]["ID"],
         "question": result[0]["question"],
-        "choice_1": result[0]["choice"],
-        "choice_2": result[1]["choice"],
-        "choice_3": result[2]["choice"]
+        "choice_1": {
+            "ID": 1,
+            "answer": result[0]["choice"],
+            "is_correct": result[0]["is_correct"]
+        },
+        "choice_2": {
+            "ID": 2,
+            "answer": result[1]["choice"],
+            "is_correct": result[1]["is_correct"]
+        },
+        "choice_3": {
+            "ID": 3,
+            "answer": result[2]["choice"],
+            "is_correct": result[2]["is_correct"]
+        },
     }
     return formatted_task
+
+def check_task_answer(task):
+    answer = int(input(f"{task['question']}\n[1] {task['choice_1']['answer']} \n[2] {task['choice_2']['answer']}\n[3] {task['choice_3']['answer']}\n"))
+    if answer == task["choice_1"]["ID"]:
+        if task["choice_1"]["is_correct"]:
+            pass
+    elif answer == task["choice_2"]["ID"]:
+        if task["choice_1"]["is_correct"]:
+            pass
+    elif answer == task["choice_3"]["ID"]:
+        if task["choice_1"]["is_correct"]:
+            pass
+    else:
+        check_task_answer(task)
 
 def main():
     menu_choice = int(input("[1] Uusi peli\n[2] Jatka peliä\n"))
@@ -272,20 +289,19 @@ def main():
         airport_choices = get_airport_choices(player)
 
         for i, airport in enumerate(airport_choices):
-            print(f"[{i+1}] Kohde: {airport['airport']} Maa: {airport['country']} Hinta: {airport['co2']} CO2")
+             print(f"[{i+1}] Kohde: {airport['airport']} Maa: {airport['country']} Hinta: {airport['co2']} CO2")
 
-        player_choice = int(input("Valitse lentokentän numero 1-5"))
+        player_choice = int(input("Valitse lentokentän numero 1-5: "))
 
         match player_choice:
             case 1:
-                #päivitä pelaajan lokaation kyseseen lentokenttään
-                #poista pelaajalta pisteet lokaation hinnasta
-                #Anna pelaajalle kysymys
+                move_player(player, airport_choices[0]['ident'])
+                #add_co2(player, airport_choices[0]['co2'])
+                task = get_task()
+                check_task_answer(task)
                     #katsoo onko vastaus oikein
                     #jos oikein päivitä pelaajan pisteet
                     #laita kysymys answrered 1
-
-                print(get_task())
             case 2:
                 print("It's a banana 🍌")
             case 3:
@@ -304,15 +320,3 @@ def main():
 
 
 main()
-
-
-
-#"select task.question, answer.choice
-#from task inner join task_choices on task.ID = task_ID INNER JOIN answer on task_choices.answer_ID = answer.ID WHERE task.ID = 882"
-
-#SELECT task.question, answer.choice, answer.is_correct 
-#FROM chosen_tasks 
-#INNER JOIN task ON chosen_tasks.task_ID = task.ID 
-#INNER JOIN task_choices ON task.ID = task_choices.task_ID
-#INNER JOIN answer ON task_choices.answer_ID = answer.ID
-#WHERE chosen_tasks.answered = 0
