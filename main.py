@@ -48,11 +48,13 @@ def special_airport():
 
 
 def move_player(player, airport):
-   cursor = conn.cursor()
-   sql = "update player set location = %s where id = %s"
-   cursor.execute(sql, (airport,player["ID"]))
-   cursor.fetchone()
-   cursor.close()
+    cursor = conn.cursor()
+    sql = "update player set location = %s where id = %s"
+    cursor.execute(sql, (airport,player["ID"]))
+    cursor.close()
+
+    set_airport_visited(airport)
+
 
 def calculate_co2(player, airport):
     cursor = conn.cursor()
@@ -81,72 +83,40 @@ def select_continent():
     chosen_continent = random.choice(continent)
     return chosen_continent
 
-def set_end_position():
-    sql = "SELECT * FROM chosen_airports"
+def select_random_airport():
+    sql = "SELECT * FROM chosen_airports WHERE visited = 0 ORDER BY RAND() LIMIT 1"
     cursor = conn.cursor(dictionary=True)
     cursor.execute(sql)
-    all_airports = cursor.fetchall()
+    airport = cursor.fetchone()
     cursor.close()
-    end_airport = random.choice(all_airports)
-    return end_airport
-
-def set_start_position():
-    sql = "SELECT * FROM chosen_airports"
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute(sql)
-    all_airports = cursor.fetchall()
-    starting_airport = random.choice(all_airports)
-
-    return starting_airport
-
-# kun voitat pelin laskee pelaajaan pisteet
-def is_game_over_points(player):
-    pass
+    return airport
 
 # kun voitat pelin katsoo pelaajan lokaation
-def is_game_over_location(player):
+def is_game_over_location(player, game):
     pass
 
 def add_points(game, amount):
     total = game["points"] + amount
-    sql = "UPDATE game SET points = %s where ID = %s"
+    sql = ("UPDATE game SET Points = %s where ID = %s")
     cursor = conn.cursor()
-    cursor.execute(sql, (total, game["ID"],))
-
-def add_co2(game, co2_price):
-    total = game["co2_consumed"] + co2_price
-    sql = "UPDATE game SET co2_consumed = %s where player_ID = %s"
-    cursor = conn.cursor()
-    cursor.execute(sql, (total, game["player_ID"],))
-
+    cursor.execute(sql, (total, game["ID"]))
 
 def remove_points(game):
+    x = game["co2_consumed"] * 0.05
+    new_points = game["points"] - x
+    if new_points <= 0:
+        new_points = 0
+
     cursor = conn.cursor()
-    co2 = game['co2_consumed']
-    points = game['points']
-    player_id = game['ID']
-    if points > co2:
-        new_points = points - co2
-        new_co2 = 0
-    elif co2 > points:
-        new_points = 0
-        new_co2 = co2 - points
-    else:
-        new_points = 0
-        new_co2 = 0
-
-    sql = "UPDATE game SET points = %s, co2_consumed = %s WHERE ID = %s"
-    cursor.execute(sql, (new_points, new_co2, player_id))
-
-
-
-
-
+    sql = "UPDATE game SET points = %s WHERE ID = %s"
+    cursor.execute(sql, (new_points, game["ID"]))
+    cursor.close()
+    
 
 def set_airport_visited(airport):
     sql = "UPDATE chosen_airports SET visited = 1 WHERE ident = %s"
     cursor = conn.cursor(dictionary=True)
-    cursor.execute(sql, (airport['ident'],))
+    cursor.execute(sql, (airport,))
     cursor.close()
 
 def get_player():
@@ -205,11 +175,11 @@ def setup_game(player_name):
     delete_old_airports()
     delete_old_tasks()
     select_game_airports(select_continent())
-    start_airport = set_start_position()
-    end_airport = set_end_position()
+    start_airport = select_random_airport()
+    end_airport = select_random_airport()
 
     while(start_airport == end_airport):
-        end_airport = set_end_position()
+        end_airport = select_random_airport()
 
     create_player(player_name, start_airport)
     player = get_player()
@@ -226,29 +196,36 @@ def get_airport_choices(player,):
 
     choice = []
     for airport in results:
-        sql_name = "SELECT airport.type AS airport, country.name AS country FROM airport JOIN country ON airport.iso_country = country.iso_country WHERE airport.ident = %s;"
+        sql_name = "SELECT airport.ident AS ident, airport.type AS airport, country.name AS country FROM airport JOIN country ON airport.iso_country = country.iso_country WHERE airport.ident = %s;"
         cursor.execute(sql_name, (airport["ident"],))
         result = cursor.fetchone()
         result["co2"] = calculate_co2(player, airport["ident"])
         choice.append(result)
 
     return choice
+
+def get_airport_name(airport_ident):
+    sql = "SELECT type FROM airport WHERE ident = %s"
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute(sql, (airport_ident,))
+    name = cursor.fetchone()
+    return name["type"]
     
 def print_info_table(player, game):
+    player_location = get_airport_name(player["location"])
+    end_location = get_airport_name(game["end_airport"])
     print("----------------------------------------------------------------------------------------------------")
-    print(f'|Sijainti: {player["location"]} Pisteet: {game["points"]} Maali: {game["end_airport"]}           |')
+    print(f'|Sijainti: {player_location} Pisteet: {game["points"]} Maali: {end_location} co2 päästöt: {game["co2_consumed"]}          |')
     print("----------------------------------------------------------------------------------------------------")
 
-def get_game_state(game):
-    cursor = conn.cursor(dictionary=True)
-    sql = "SELECT is_over FROM game WHERE ID = %s"
+def update_game_state(game):
+    cursor = conn.cursor()
+    sql = "UPDATE game SET is_over = 1 WHERE ID = %s"
     cursor.execute(sql, (game["ID"],))
-    result = cursor.fetchone()
-    return result
 
 def get_task():
     sql = """
-    SELECT task.question, answer.choice, answer.is_correct
+    SELECT task.ID, task.question, answer.choice, answer.is_correct, task.points
     FROM (
         SELECT chosen_tasks.task_ID
         FROM chosen_tasks
@@ -266,18 +243,61 @@ def get_task():
     cursor.execute(sql)
     result = cursor.fetchall()
     formatted_task = {
+        "ID": result[0]["ID"],
         "question": result[0]["question"],
-        "choice_1": result[0]["choice"],
-        "choice_2": result[1]["choice"],
-        "choice_3": result[2]["choice"]
+        "points": result[0]["points"],
+        "choice_1": {
+            "ID": 1,
+            "answer": result[0]["choice"],
+            "is_correct": result[0]["is_correct"]
+        },
+        "choice_2": {
+            "ID": 2,
+            "answer": result[1]["choice"],
+            "is_correct": result[1]["is_correct"]
+        },
+        "choice_3": {
+            "ID": 3,
+            "answer": result[2]["choice"],
+            "is_correct": result[2]["is_correct"]
+        },
     }
     return formatted_task
 
-def main():
-    #add_points(get_game(),50)
-    #add_co2(get_game(),100)
-    remove_points(get_game())
+def add_co2(game, co2_price):
+    total = game["co2_consumed"] + co2_price
+    print("total::::", game["co2_consumed"])
+    sql = "UPDATE game SET co2_consumed = %s WHERE ID = %s"
+    cursor = conn.cursor()
+    cursor.execute(sql, (total, game["ID"]))
+    cursor.close()
+    
+def handle_task_answer(task, game):
+    answer = int(input(f"{task['question']}\n[1] {task['choice_1']['answer']} \n[2] {task['choice_2']['answer']}\n[3] {task['choice_3']['answer']}\n"))
+    if answer == task["choice_1"]["ID"]:
+        set_task_answered(task)
+        if task["choice_1"]["is_correct"]:
+            add_points(game, task["points"])
+            return True
+    elif answer == task["choice_2"]["ID"]:
+        set_task_answered(task)
+        if task["choice_2"]["is_correct"]:
+            add_points(game, task["points"])
+            return True
+    elif answer == task["choice_3"]["ID"]:
+        set_task_answered(task)
+        if task["choice_3"]["is_correct"]:
+            add_points(game, task["points"])
+            return True
+    else:
+        handle_task_answer(task)
 
+def set_task_answered(task):
+    sql = ("UPDATE chosen_tasks SET answered = 1 WHERE task_ID = %s")
+    cursor = conn.cursor()
+    cursor.execute(sql, (task["ID"],))
+
+def main():
     menu_choice = int(input("[1] Uusi peli\n[2] Jatka peliä\n"))
     if menu_choice == 1:
         player_name = input("pelaajan nimi")
@@ -291,56 +311,89 @@ def main():
     else:
         print("peli sulkeutuu")
 
-    player = get_player()
     game = get_game()
-    game_state = get_game_state(game)
-    print(game_state)
-    while(not game_state['is_over']):
-        print_info_table(player, game)
+    while(not game['is_over']):
+        game = get_game()
+        player = get_player()
         airport_choices = get_airport_choices(player)
 
+        if player["location"] == game["end_airport"]:
+            update_game_state(game)
+            remove_points(game)
+            print_info_table(player, get_game())
+            return
+        
+        print_info_table(player, game)
+        
         for i, airport in enumerate(airport_choices):
-            print(f"[{i+1}] Kohde: {airport['airport']} Maa: {airport['country']} Hinta: {airport['co2']} CO2")
-
-        player_choice = int(input("Valitse lentokentän numero 1-5"))
-
+             print(f"[{i+1}] Kohde: {airport['airport']} Maa: {airport['country']} Hinta: {airport['co2']} CO2")
+        
+        player_choice = int(input("Valitse lentokentän numero 1-5: "))
         match player_choice:
             case 1:
-                #päivitä pelaajan lokaation kyseseen lentokenttään / tehty
-                # lisää pelaajalle co2 päästöjä / tehty
-                #Anna pelaajalle kysymys
+                move_player(player, airport_choices[0]['ident'])
+                add_co2(game, airport_choices[0]["co2"])
+                task = get_task()
+                answer = handle_task_answer(task, game)
+                if answer:
+                    print("vastasit Oikein")
+                else:
+                    print("vastasit väärin")
                     #katsoo onko vastaus oikein
-                    #jos oikein päivitä pelaajan co2 päästöt
+                    #jos oikein päivitä pelaajan pisteet
                     #laita kysymys answrered 1
-
-                print(get_task())
             case 2:
-                print("It's a banana 🍌")
+                move_player(player, airport_choices[1]['ident'])
+                add_co2(game, airport_choices[1]["co2"])
+                task = get_task()
+                answer = handle_task_answer(task, game)
+                if answer:
+                    print("vastasit Oikein")
+                else:
+                    print("vastasit väärin")
+                    #katsoo onko vastaus oikein
+                    #jos oikein päivitä pelaajan pisteet
+                    #laita kysymys answrered 1
             case 3:
-                print("It's an orange 🍊")
+                move_player(player, airport_choices[2]['ident'])
+                add_co2(game, airport_choices[2]["co2"])
+                print(airport_choices[2]["co2"])
+                task = get_task()
+                answer = handle_task_answer(task, game)
+                if answer:
+                    print("vastasit Oikein")
+                else:
+                    print("vastasit väärin")
+                    #katsoo onko vastaus oikein
+                    #jos oikein päivitä pelaajan pisteet
+                    #laita kysymys answrered 1
             case 4:
-                print("It's an orange 🍊")
+                move_player(player, airport_choices[3]['ident'])
+                add_co2(game, airport_choices[3]["co2"])
+                task = get_task()
+                answer = handle_task_answer(task, game)
+                if answer:
+                    print("vastasit Oikein")
+                else:
+                    print("vastasit väärin")
             case 5:
-                print("It's an orange 🍊")
+                move_player(player, airport_choices[4]['ident'])
+                add_co2(game, airport["co2"])
+                add_co2(game, airport_choices[4]["co2"])
+                task = get_task()
+                answer = handle_task_answer(task, game)
+                if answer:
+                    print("vastasit Oikein")
+                else:
+                    print("vastasit väärin")
+                    #katsoo onko vastaus oikein
+                    #jos oikein päivitä pelaajan pisteet
+                    #laita kysymys answrered 1
             case _:
-                print("Peli sulkeutuu")
                 return
-
-        game_state = get_game_state(game)
-
     print("main")
 
 
 main()
 
-
-
-#"select task.question, answer.choice
-#from task inner join task_choices on task.ID = task_ID INNER JOIN answer on task_choices.answer_ID = answer.ID WHERE task.ID = 882"
-
-#SELECT task.question, answer.choice, answer.is_correct 
-#FROM chosen_tasks 
-#INNER JOIN task ON chosen_tasks.task_ID = task.ID 
-#INNER JOIN task_choices ON task.ID = task_choices.task_ID
-#INNER JOIN answer ON task_choices.answer_ID = answer.ID
-#WHERE chosen_tasks.answered = 0
+print("Peli Loppu")
