@@ -37,6 +37,7 @@ def select_game_airports(continent):
 
 
 def special_airport():
+    #ei käytössä
     cursor = conn.cursor(dictionary=True)
     sql = "select ident from chosen_airports"
     cursor.execute(sql)
@@ -46,10 +47,9 @@ def special_airport():
     sql_update = "update chosen_airports set special = %s where ident = %s"
     cursor.execute(sql_update,(1,s_airport["ident"]) )
 
-
 def move_player(player, airport):
     cursor = conn.cursor()
-    sql = "update player set location = %s where id = %s"
+    sql = "UPDATE player SET location = %s WHERE id = %s"
     cursor.execute(sql, (airport,player["ID"]))
     cursor.close()
 
@@ -58,7 +58,7 @@ def move_player(player, airport):
 
 def calculate_co2(player, airport):
     cursor = conn.cursor()
-    sql ="select latitude_deg, longitude_deg, name from airport where ident = %s"
+    sql ="SELECT latitude_deg, longitude_deg, name FROM airport WHERE ident = %s"
     cursor.execute(sql,(airport, ))
     destination_point = cursor.fetchone()
 
@@ -91,10 +91,6 @@ def select_random_airport():
     cursor.close()
     return airport
 
-# kun voitat pelin katsoo pelaajan lokaation
-def is_game_over_location(player, game):
-    pass
-
 def add_points(game, amount):
     total = game["points"] + amount
     sql = ("UPDATE game SET Points = %s where ID = %s")
@@ -102,8 +98,8 @@ def add_points(game, amount):
     cursor.execute(sql, (total, game["ID"]))
 
 def remove_points(game):
-    x = game["co2_consumed"] * 0.05
-    new_points = game["points"] - x
+    penalty = game["co2_consumed"] * 0.05
+    new_points = game["points"] - penalty
     if new_points <= 0:
         new_points = 0
 
@@ -121,7 +117,7 @@ def set_airport_visited(airport):
 
 def get_player():
     cursor = conn.cursor(dictionary=True)
-    sql = "select * from player order by id desc limit 1"
+    sql = "SELECT * FROM player ORDER BY id DESC LIMIT 1"
     cursor.execute(sql)
     player = cursor.fetchone()
     cursor.close()
@@ -129,7 +125,7 @@ def get_player():
 
 def get_game():
     cursor = conn.cursor(dictionary=True)
-    sql = "select * from game order by id desc limit 1"
+    sql = "SELECT * FROM game ORDER BY id DESC LIMIT 1"
     cursor.execute(sql)
     game = cursor.fetchone()
     cursor.close()
@@ -266,7 +262,6 @@ def get_task():
 
 def add_co2(game, co2_price):
     total = game["co2_consumed"] + co2_price
-    print("total::::", game["co2_consumed"])
     sql = "UPDATE game SET co2_consumed = %s WHERE ID = %s"
     cursor = conn.cursor()
     cursor.execute(sql, (total, game["ID"]))
