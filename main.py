@@ -1,8 +1,13 @@
 import mysql.connector
+
 import random
+
 from geopy import distance
 
+
+
 conn = mysql.connector.connect(
+
     host='mysql.metropolia.fi',
     port=3306,
     database='karimbe',
@@ -22,17 +27,19 @@ def create_game(player, start_airport, end_airport):
     sql = "INSERT INTO game (player_ID, start_airport, end_airport, is_over) VALUES(%s, %s, %s, %s)"
     cursor.execute(sql, (player["ID"], start_airport["ident"], end_airport["ident"], 0))
 
+
 def select_game_airports(continent):
     sql_select = "SELECT ident FROM airport WHERE continent = %s AND name != 'closed' LIMIT 30"
     cursor = conn.cursor(dictionary=True)
     cursor.execute(sql_select, (continent,))
-
     chosen_airports = cursor.fetchall()
+
     sql_update = "INSERT INTO chosen_airports(ident, special, visited) VALUES(%s, %s, %s)"
+
     for airport in chosen_airports:
         cursor.execute(sql_update, (airport["ident"], 0, 0))
-
     cursor.close()
+
 
 def special_airport():
     cursor = conn.cursor(dictionary=True)
@@ -43,6 +50,7 @@ def special_airport():
     special = 1  if s_airport == airports else 0
     sql_update = "update chosen_airports set special = %s where ident = %s"
     cursor.execute(sql_update,(1,s_airport["ident"]) )
+
 
 def move_player(player, airport):
    cursor = conn.cursor()
@@ -65,10 +73,10 @@ def calculate_price(player, airport):
 
     km = distance.distance(destination_coords, player_coords).km
 
-    price = km * 0.11
+    price = km * 0.01
     if airport_type == "large_airport":
         price *= 2
-    return int(price)
+    print(km)
 
 def select_continent():
     sql = "select distinct continent from airport where continent is not null"
@@ -87,6 +95,7 @@ def set_end_position():
     all_airports = cursor.fetchall()
     cursor.close()
     end_airport = random.choice(all_airports)
+    print(end_airport)
     return end_airport
 
 def set_start_position():
@@ -98,8 +107,11 @@ def set_start_position():
 
     return starting_airport
 
+
+
 # kun voitat pelin laskee pelaajaan pisteet
 def is_game_over_points(player):
+
     pass
 
 # kun voitat pelin katsoo pelaajan lokaation
@@ -107,16 +119,27 @@ def is_game_over_location(player):
     pass
 
 def add_points(player, amount):
+
     total = player["points"] + amount
+
     sql = ("UPDATE player SET Points = %s where ID = %s")
     cursor = conn.cursor()
+
     cursor.execute(sql, (total, player["ID"]))
 
+
+
 def remove_points(player, amount):
+
     total = player["points"] - amount
+
     sql = "UPDATE player SET Points = %s where ID = %s"
     cursor = conn.cursor()
+
     cursor.execute(sql, (total, player["ID"]))
+
+
+
 
 
 def set_airport_visited(airport):
@@ -124,7 +147,7 @@ def set_airport_visited(airport):
     cursor = conn.cursor(dictionary=True)
     cursor.execute(sql, (airport['ident'],))
     cursor.close()
-    
+
 def get_player():
     cursor = conn.cursor(dictionary=True)
     sql = "select * from player order by id desc limit 1"
@@ -167,11 +190,11 @@ def select_game_tasks(player):
         SELECT * FROM task WHERE level = 1 ORDER BY RAND() LIMIT 10
     )
     """
-    
+
     cursor = conn.cursor(dictionary=True)
     cursor.execute(sql_select_tasks)
     tasks = cursor.fetchall()
-    
+
     sql_update_chosen_tasks = "INSERT INTO chosen_tasks(player_ID, task_ID, answered) VALUES(%s, %s, 0)"
     for task in tasks:
         cursor.execute(sql_update_chosen_tasks, (player["ID"], task["ID"]))
@@ -182,14 +205,15 @@ def setup_game(player_name):
     select_game_airports(select_continent())
     start_airport = set_start_position()
     end_airport = set_end_position()
+
     while(start_airport == end_airport):
         end_airport = set_end_position()
 
     create_player(player_name, 1000, start_airport)
     player = get_player()
     select_game_tasks(player)
-
     create_game(player, start_airport, end_airport)
+
     return player
 
 def get_airport_choices(player,):
@@ -227,15 +251,21 @@ def get_task(level):
         "question"
     }
 
+
+
+
+
 def main():
     menu_choice = int(input("[1] Uusi peli\n[2] Jatka peliä\n"))
     if menu_choice == 1:
         player_name = input("pelaajan nimi")
+
         setup_game(player_name)
         print("Tervetuloa Amazing Race tietovisa-peliin!")
     elif menu_choice == 2:
         print("pelin jatke")
         pass
+
     else:
         print("peli sulkeutuu")
 
