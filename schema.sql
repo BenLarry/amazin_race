@@ -1091,7 +1091,7 @@ SET @answer1_id = LAST_INSERT_ID();
 INSERT INTO answer (choice, is_correct) VALUES ("Ikebana", 0);
 SET @answer2_id = LAST_INSERT_ID();
 
-INSERT INTO answer (choice, is_correct) VALUES ("Shodo (kalligrafia)", 1);
+INSERT INTO answer (choice, is_correct) VALUES ("Shodo", 1);
 SET @answer3_id = LAST_INSERT_ID();
 
 INSERT INTO task_choices (task_ID, answer_ID) VALUES (@task_id, @answer1_id);
