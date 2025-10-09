@@ -107,11 +107,11 @@ def is_game_over_points(player):
 def is_game_over_location(player):
     pass
 
-def add_points(player, amount):
-    total = player["points"] + amount
-    sql = ("UPDATE player SET Points = %s where ID = %s")
+def add_points(game, amount):
+    total = game["points"] + amount
+    sql = "UPDATE game SET points = %s where ID = %s"
     cursor = conn.cursor()
-    cursor.execute(sql, (total, player["ID"]))
+    cursor.execute(sql, (total, game["ID"],))
 
 def add_co2(game, co2_price):
     total = game["co2_consumed"] + co2_price
@@ -120,12 +120,12 @@ def add_co2(game, co2_price):
     cursor.execute(sql, (total, game["player_ID"],))
 
 
-
-def remove_points(player, amount):
-    total = player["points"] - amount
-    sql = "UPDATE player SET Points = %s where ID = %s"
+def remove_points(game, total):
     cursor = conn.cursor()
-    cursor.execute(sql, (total, player["ID"]))
+    new_points = game['points'] - game['co2_consumed']
+    sql = "update game set co2_consumed = %s, points = %s where ID = %s"
+    cursor.execute(sql, (game['ID'],)
+
 
 def set_airport_visited(airport):
     sql = "UPDATE chosen_airports SET visited = 1 WHERE ident = %s"
@@ -258,7 +258,8 @@ def get_task():
     return formatted_task
 
 def main():
-    add_co2(get_game(), 50)
+    remove_points(get_game(),100)
+
     menu_choice = int(input("[1] Uusi peli\n[2] Jatka peliä\n"))
     if menu_choice == 1:
         player_name = input("pelaajan nimi")
@@ -287,8 +288,8 @@ def main():
 
         match player_choice:
             case 1:
-                #päivitä pelaajan lokaation kyseseen lentokenttään
-                # lisää pelaajalle co2 päästöjä
+                #päivitä pelaajan lokaation kyseseen lentokenttään / tehty
+                # lisää pelaajalle co2 päästöjä / tehty
                 #Anna pelaajalle kysymys
                     #katsoo onko vastaus oikein
                     #jos oikein päivitä pelaajan co2 päästöt
