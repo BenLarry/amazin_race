@@ -101,11 +101,17 @@ def add_points(game, amount):
     cursor = conn.cursor()
     cursor.execute(sql, (total, game["ID"]))
 
-def remove_points(player, amount):
-    total = player["points"] - amount
-    sql = "UPDATE player SET Points = %s where ID = %s"
+def remove_points(game):
+    x = game["co2_consumed"] * 0.05
+    new_points = game["points"] - x
+    if new_points <= 0:
+        new_points = 0
+
     cursor = conn.cursor()
-    cursor.execute(sql, (total, player["ID"]))
+    sql = "UPDATE game SET points = %s WHERE ID = %s"
+    cursor.execute(sql, (new_points, game["ID"]))
+    cursor.close()
+    
 
 def set_airport_visited(airport):
     sql = "UPDATE chosen_airports SET visited = 1 WHERE ident = %s"
@@ -314,6 +320,7 @@ def main():
 
         if player["location"] == game["end_airport"]:
             update_game_state(game)
+            remove_points(game)
             return
         
 
