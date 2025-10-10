@@ -184,7 +184,7 @@ def setup_game(player_name):
 
     return player
 
-def get_airport_choices(player,):
+def get_airport_choices(player):
     sql = "SELECT ident FROM chosen_airports WHERE visited = 0 ORDER BY RAND() LIMIT 5"
     cursor = conn.cursor(dictionary=True)
     cursor.execute(sql)
