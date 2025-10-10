@@ -7,11 +7,11 @@ Amazin Race is a terminal-based quiz game where players fly between different re
 1. Clone the repository:
    ```bash
    git clone https://github.com/BenLarry/amazin_race.git
-   cd amazin-race```
+   cd amazin-race
 
 2. Install the required libraries:
     ```bash
-    pip install -r requirements.txt```
+    pip install -r requirements.txt
 
 3. set up databse with schema:
     -upload schema.sql to MYSQL/MARIADB 
