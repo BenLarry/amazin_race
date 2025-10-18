@@ -25,7 +25,7 @@ def create_game(player, start_airport, end_airport):
     cursor.close()
 
 def select_game_airports(continent):
-    sql_select = "SELECT ident FROM airport WHERE continent = %s AND name != 'closed' LIMIT 30"
+    sql_select = "SELECT ident FROM airport WHERE continent = %s AND name != 'closed' ORDER BY RAND() LIMIT 30"
     cursor = conn.cursor(dictionary=True)
     cursor.execute(sql_select, (continent,))
     chosen_airports = cursor.fetchall()
